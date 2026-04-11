@@ -28,9 +28,15 @@ class ScienceApp {
         this.userAdditions.forEach(add => {
             const traverse = (nodes) => {
                 for(let node of nodes) {
-                    if (node.name === add.subfield && node.concepts) {
-                        if (!node.concepts.some(c => (typeof c === 'string' ? c : c.name) === add.concept)) {
-                            node.concepts.push({ name: add.concept, userAdded: true, aiSuggested: add.aiSuggested });
+                    if (add.type === 'subfield' && node.name === add.parentName && node.subfields) {
+                        if (!node.subfields.some(s => s.name === add.name)) {
+                            node.subfields.push({ name: add.name, type: 'subfield', concepts: [], userAdded: true });
+                        }
+                        return true;
+                    }
+                    if (add.type === 'concept' && node.name === add.parentName && node.concepts) {
+                        if (!node.concepts.some(c => (typeof c === 'string' ? c : c.name) === add.name)) {
+                            node.concepts.push({ name: add.name, userAdded: true, aiSuggested: add.aiSuggested });
                         }
                         return true;
                     }
@@ -73,8 +79,14 @@ class ScienceApp {
         else if (item.concepts) childrenCount = item.concepts.length;
         const header = document.createElement('div');
         header.className = 'node-header';
+        
         let actionButtons = '';
-        if (item.type === 'subfield') actionButtons = `<button class="btn-mini add-concept-btn" title="AI Suggest Additional Concepts">+</button>`;
+        if (item.type === 'field') {
+            actionButtons = `<button class="btn-mini add-concept-btn" title="AI Suggest Additional Subfields">+</button>`;
+        } else if (item.type === 'subfield') {
+            actionButtons = `<button class="btn-mini add-concept-btn" title="AI Suggest Additional Concepts">+</button>`;
+        }
+
         header.innerHTML = `<span class="arrow">▼</span><span class="node-name">${item.name}</span>${actionButtons}<span class="badge">${childrenCount}</span>`;
         header.onclick = (e) => {
             if (e.target.classList.contains('add-concept-btn')) {
@@ -149,17 +161,23 @@ class ScienceApp {
         return node;
     }
 
-    openAddModal(subfield, hierarchy) {
-        this.activeSubfield = subfield;
+    openAddModal(targetNode, hierarchy) {
+        this.activeTargetNode = targetNode;
         this.activeHierarchy = hierarchy;
         this.currentSuggestions = [];
-        document.getElementById('modalTitle').textContent = `Add to ${subfield.name}`;
+        const isField = targetNode.type === 'field';
+        
+        document.getElementById('modalTitle').textContent = isField 
+            ? `Suggest Subfields for ${targetNode.name}` 
+            : `Add Concepts to ${targetNode.name}`;
+            
         document.getElementById('aiSuggestionsList').innerHTML = '';
         document.getElementById('addSelectedAI').classList.add('hidden');
         document.getElementById('suggestMoreAI').classList.add('hidden');
         document.getElementById('completeMessage').classList.add('hidden');
         document.getElementById('modalStats').classList.add('hidden');
         document.getElementById('apiWarning').classList.add('hidden');
+        
         const apiKey = localStorage.getItem('openrouter_api_key');
         if (!apiKey) {
             document.getElementById('apiWarning').classList.remove('hidden');
@@ -172,6 +190,7 @@ class ScienceApp {
                 this.getAISuggestions();
             }
         }
+        
         document.getElementById('addModal').classList.add('active');
     }
 
@@ -183,6 +202,7 @@ class ScienceApp {
         const moreBtn = document.getElementById('suggestMoreAI');
         const completeMsg = document.getElementById('completeMessage');
         const list = document.getElementById('aiSuggestionsList');
+        
         loading.classList.remove('hidden');
         completeMsg.classList.add('hidden');
         refreshBtn.disabled = true;
@@ -193,12 +213,26 @@ class ScienceApp {
             this.currentSuggestions = [];
         }
 
-        const subfield = this.activeSubfield.name;
+        const isField = this.activeTargetNode.type === 'field';
+        const targetName = this.activeTargetNode.name;
         const kingdom = this.activeHierarchy[0];
-        const field = this.activeHierarchy[1];
-        const existingInSubfield = this.activeSubfield.concepts.map(c => typeof c === 'string' ? c : c.name);
-        const allKnown = [...new Set([...existingInSubfield, ...this.currentSuggestions])];
-        const existingList = allKnown.join(', ');
+
+        let systemPrompt = "";
+        let userPrompt = "";
+
+        if (isField) {
+            const existingSubfields = (this.activeTargetNode.subfields || []).map(s => s.name);
+            const allKnown = [...new Set([...existingSubfields, ...this.currentSuggestions])];
+            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established subfields that are missing. Only suggest subfields that genuinely belong in this field. Do NOT repeat any subfield already in the list. Return ONLY a JSON array of strings.";
+            userPrompt = `Field: ${targetName} in ${kingdom}. These subfields already exist: ${allKnown.join(', ')}. Suggest 5-10 MORE real subfields that are missing. If no more exist, return [].`;
+        } else {
+            const field = this.activeHierarchy[1];
+            const existingConcepts = (this.activeTargetNode.concepts || []).map(c => typeof c === 'string' ? c : c.name);
+            const allKnown = [...new Set([...existingConcepts, ...this.currentSuggestions])];
+            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established concepts that are missing from this subfield. Do NOT repeat any concept already in the list. Return ONLY a JSON array of strings.";
+            userPrompt = `Subfield: ${targetName} in ${field} (${kingdom}). These concepts already exist: ${allKnown.join(', ')}. Suggest 10-20 MORE concepts that are DIFFERENT from all of these. If no more exist, return [].`;
+        }
+
         try {
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -206,8 +240,8 @@ class ScienceApp {
                 body: JSON.stringify({
                     "model": "google/gemini-2.0-flash-001",
                     "messages": [
-                        { "role": "system", "content": "You are an expert academic taxonomy assistant. Suggest additional real, established concepts that are missing from the given list. Only suggest concepts that genuinely belong in this subfield. Do NOT repeat any concept already in the list. Return ONLY a JSON array of strings. If there are no more real concepts to suggest, return an empty array []. No markdown, no explanation." },
-                        { "role": "user", "content": `Subfield: ${subfield} in ${field} (${kingdom}). These concepts already exist: ${existingList}. Suggest 10-20 MORE concepts that are DIFFERENT from all of these. If no more exist, return [].` }
+                        { "role": "system", "content": systemPrompt },
+                        { "role": "user", "content": userPrompt }
                     ]
                 })
             });
@@ -259,11 +293,19 @@ class ScienceApp {
 
     addSelectedAI() {
         const checkboxes = document.querySelectorAll('#aiSuggestionsList input[type="checkbox"]:checked');
+        const isField = this.activeTargetNode.type === 'field';
         checkboxes.forEach(cb => {
             const val = cb.value;
-            if (!this.allConcepts.has(val.toLowerCase().trim())) {
-                this.activeSubfield.concepts.push({ name: val, userAdded: true, aiSuggested: true });
-                this.userAdditions.push({ subfield: this.activeSubfield.name, concept: val, aiSuggested: true });
+            if (isField) {
+                if (!this.activeTargetNode.subfields.some(s => s.name === val)) {
+                    this.activeTargetNode.subfields.push({ name: val, type: 'subfield', concepts: [], userAdded: true });
+                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: val, type: 'subfield' });
+                }
+            } else {
+                if (!this.allConcepts.has(val.toLowerCase().trim())) {
+                    this.activeTargetNode.concepts.push({ name: val, userAdded: true, aiSuggested: true });
+                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: val, type: 'concept', aiSuggested: true });
+                }
             }
         });
         this.saveAndRefresh();
@@ -272,12 +314,21 @@ class ScienceApp {
     addManual() {
         const input = document.getElementById('newConceptInput');
         const name = input.value.trim();
-        if (name && !this.allConcepts.has(name.toLowerCase().trim())) {
-            this.activeSubfield.concepts.push({ name: name, userAdded: true, aiSuggested: false });
-            this.userAdditions.push({ subfield: this.activeSubfield.name, concept: name, aiSuggested: false });
-            input.value = '';
-            this.saveAndRefresh();
+        if (!name) return;
+        const isField = this.activeTargetNode.type === 'field';
+        if (isField) {
+            if (!this.activeTargetNode.subfields.some(s => s.name === name)) {
+                this.activeTargetNode.subfields.push({ name: name, type: 'subfield', concepts: [], userAdded: true });
+                this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'subfield' });
+            }
+        } else {
+            if (!this.allConcepts.has(name.toLowerCase().trim())) {
+                this.activeTargetNode.concepts.push({ name: name, userAdded: true, aiSuggested: false });
+                this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'concept', aiSuggested: false });
+            }
         }
+        input.value = '';
+        this.saveAndRefresh();
     }
 
     saveAndRefresh() {
