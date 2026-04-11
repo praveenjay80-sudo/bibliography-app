@@ -80,11 +80,25 @@ class ScienceApp {
         } else if (item.type === 'subfield') {
             actionButtons = `<button class="btn-mini add-concept-btn" title="AI Suggest Additional Concepts">✨ Suggest</button>`;
         }
+
+        // Add delete button for user-added items
+        if (item.userAdded) {
+            actionButtons += `<button class="btn-mini delete-btn" title="Delete this subfield">🗑️</button>`;
+        }
+
         header.innerHTML = `<span class="arrow">▼</span><span class="node-name">${item.name}</span>${actionButtons}<span class="badge">${childrenCount}</span>`;
+        
         header.onclick = (e) => {
             if (e.target.classList.contains('add-concept-btn')) {
                 e.stopPropagation();
                 this.openAddModal(item, currentHierarchy);
+                return;
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                e.stopPropagation();
+                if(confirm(`Are you sure you want to delete the subfield "${item.name}" and all its concepts?`)) {
+                    this.deleteUserItem(item.name, 'subfield');
+                }
                 return;
             }
             e.stopPropagation();
@@ -287,6 +301,30 @@ class ScienceApp {
         this.render();
         this.updateStats();
         this.displaySuggestions(this.currentSuggestions);
+    }
+
+    deleteUserItem(itemName, type) {
+        // Remove from userAdditions array
+        this.userAdditions = this.userAdditions.filter(item => item.name !== itemName);
+        
+        // Remove from the live in-memory data
+        const traverseAndRemove = (nodes) => {
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const node = nodes[i];
+                if (type === 'subfield' && node.subfields) {
+                    node.subfields = node.subfields.filter(s => s.name !== itemName);
+                    traverseAndRemove(node.subfields);
+                } else if (type === 'concept' && node.concepts) {
+                    node.concepts = node.concepts.filter(c => (typeof c === 'string' ? c : c.name) !== itemName);
+                }
+                if (node.fields) traverseAndRemove(node.fields);
+                if (node.subfields) traverseAndRemove(node.subfields);
+            }
+        };
+        traverseAndRemove(this.data);
+        
+        // Save and re-render
+        this.saveAndRefresh();
     }
     async showLesson(concept) {
         document.getElementById('bibTitle').textContent = concept;
