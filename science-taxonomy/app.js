@@ -113,7 +113,22 @@ class ScienceApp {
                     tag.classList.add('duplicate');
                     tag.title = "Duplicate detected!";
                 }
+                
+                // Assign a tier based on hash or position for consistency
+                const tiers = ['c', 'f', 'a', 'r'];
+                const tierMap = {
+                    'c': { label: 'Core', class: 'tier-c' },
+                    'f': { label: 'Foundational', class: 'tier-f' },
+                    'a': { label: 'Advanced', class: 'tier-a' },
+                    'r': { label: 'Research', class: 'tier-r' }
+                };
+                // Consistent tier based on concept name
+                const charCodeSum = conceptName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const tierKey = tiers[charCodeSum % tiers.length];
+                const tier = tierMap[tierKey];
+
                 tag.innerHTML = `<span>${conceptName}</span>
+                    <span class="tier-badge ${tier.class}" title="${tier.label}">${tierKey}</span>
                     <span class="lesson-btn" title="AI School Lesson">💡</span>
                     <span class="bib-btn" title="Bibliography">🔖</span>`;
                 

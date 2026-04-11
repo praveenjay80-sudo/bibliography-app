@@ -217,6 +217,24 @@
             display: none !important;
             content: "" !important;
         }
+
+        /* Taxonomy Tier Badges */
+        .tier-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 1px 3px;
+            border-radius: 3px;
+            margin-left: 4px;
+            text-transform: uppercase;
+            border: 1px solid currentColor;
+            opacity: 0.8;
+            cursor: help;
+        }
+        .tier-c { color: #10b981; } /* Core - Green */
+        .tier-f { color: #3b82f6; } /* Foundational - Blue */
+        .tier-a { color: #f59e0b; } /* Advanced - Amber */
+        .tier-r { color: #ef4444; } /* Research - Red */
+
         .bib-btn:hover, .lesson-btn:hover { 
             transform: translateY(-1px);
             background: var(--bg-secondary);
@@ -396,15 +414,17 @@
         </div>
     </div>
     <div class="header-subheader" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4; padding: 0.5rem; background: rgba(0,0,0,0.02); border-radius: 6px; border-left: 3px solid var(--accent-formal);">
-        <strong>Features:</strong> 
-        🗺️ <strong>Exhaustive Taxonomy:</strong> Formal, Natural, & Social Sciences. 
-        🔍 <strong>Live Search:</strong> Instant filtering. 
-        ✨ <strong>AI Suggest:</strong> Iterative concept expansion. 
-        📚 <strong>AI Lessons:</strong> Child-friendly explanations. 
-        📖 <strong>Live Bibliography:</strong> Real academic references. 
-        🌓 <strong>Dark Mode:</strong> Responsive design. 
-        💾 <strong>Persistence:</strong> Local storage saving. 
-        📥 <strong>Export:</strong> Full JSON or custom additions.
+        <div>
+            <strong>Features:</strong> 🗺️ Taxonomy, 🔍 Search, ✨ AI Suggest, 📚 AI Lessons, 📖 Bibliography, 🌓 Theme, 💾 Persistence, 📥 Export
+        </div>
+        <div style="margin-top: 5px; font-size: 0.8rem; border-top: 1px dashed var(--border); padding-top: 5px;">
+            <strong>Legend:</strong> 
+            <span class="tier-badge tier-c">C</span> Core | 
+            <span class="tier-badge tier-f">F</span> Foundational | 
+            <span class="tier-badge tier-a">A</span> Advanced | 
+            <span class="tier-badge tier-r">R</span> Research || 
+            💡 <strong>Lesson</strong> | 🔖 <strong>Refs</strong>
+        </div>
     </div>
     <div class="controls">
         <div class="search-container">
