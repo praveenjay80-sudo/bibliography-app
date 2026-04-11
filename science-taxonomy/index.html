@@ -102,6 +102,32 @@
         .side-panel h2 { margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
         .side-panel-close { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; }
         
+        /* Lesson Styles */
+        .lesson-container {
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--accent-formal);
+        }
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: var(--accent-formal);
+        }
+        .lesson-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .lesson-step {
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--accent-formal);
+        }
+
         .ref-section { margin-bottom: 1.5rem; }
         .ref-item { font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--text-secondary); }
         .link-list { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -172,7 +198,7 @@
             background: rgba(0,0,0,0.02);
             font-style: italic;
         }
-        .bib-btn { 
+        .bib-btn, .lesson-btn { 
             cursor: pointer; 
             opacity: 1; 
             font-size: 0.8rem;
@@ -194,14 +220,21 @@
             margin-left: 3px;
             text-transform: uppercase;
         }
-        .bib-btn:hover { 
+        .lesson-btn::after {
+            content: "Lesson";
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 3px;
+            text-transform: uppercase;
+        }
+        .bib-btn:hover, .lesson-btn:hover { 
             transform: translateY(-1px);
             background: var(--bg-secondary);
             border-color: var(--accent-formal);
             color: var(--accent-formal);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .bib-btn:active {
+        .bib-btn:active, .lesson-btn:active {
             transform: translateY(0);
         }
 
@@ -438,10 +471,19 @@
     </div>
 </div>
 
-<!-- Side Panel for Bibliography -->
+<!-- Side Panel for Bibliography & Lessons -->
 <div class="side-panel" id="bibPanel">
     <span class="side-panel-close" onclick="document.getElementById('bibPanel').classList.remove('active')">×</span>
     <h2 id="bibTitle">Concept</h2>
+    
+    <!-- AI Lesson Section -->
+    <div id="lessonSection" class="lesson-container hidden">
+        <div class="lesson-header">📚 School Lesson</div>
+        <div id="lessonContent" class="lesson-content">
+            <!-- AI Lesson here -->
+        </div>
+    </div>
+
     <div class="ref-section">
         <h4>Key References</h4>
         <div id="bibRefs" class="ref-item">

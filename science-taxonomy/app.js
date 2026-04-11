@@ -4,13 +4,14 @@ class ScienceApp {
         this.userAdditions = JSON.parse(localStorage.getItem('userAdditions') || '[]');
         this.suggestionsCache = JSON.parse(localStorage.getItem('suggestionsCache') || '{}');
         this.bibCache = JSON.parse(localStorage.getItem('bibCache') || '{}');
+        this.lessonCache = JSON.parse(localStorage.getItem('lessonCache') || '{}');
         this.allConcepts = new Set();
         this.duplicates = new Set();
         this.root = document.getElementById('taxonomyRoot');
         this.theme = 'light';
         this.activeSubfield = null;
         this.activeHierarchy = null;
-        this.currentSuggestions = []; // Accumulator for suggestions in the modal
+        this.currentSuggestions = [];
         
         this.init();
     }
@@ -112,11 +113,19 @@ class ScienceApp {
                     tag.classList.add('duplicate');
                     tag.title = "Duplicate detected!";
                 }
-                tag.innerHTML = `<span>${conceptName}</span><span class="bib-btn" title="Bibliography">📖</span>`;
+                tag.innerHTML = `<span>${conceptName}</span>
+                    <span class="lesson-btn" title="AI School Lesson"></span>
+                    <span class="bib-btn" title="Bibliography"></span>`;
+                
                 tag.querySelector('.bib-btn').onclick = (e) => {
                     e.stopPropagation();
                     this.showBibliography(conceptName);
                 };
+                tag.querySelector('.lesson-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    this.showLesson(conceptName);
+                };
+
                 grid.appendChild(tag);
             });
             content.appendChild(grid);
@@ -163,10 +172,15 @@ class ScienceApp {
         completeMsg.classList.add('hidden');
         refreshBtn.disabled = true;
         moreBtn.disabled = true;
+        
+        if (!isMore) {
+            list.innerHTML = '';
+            this.currentSuggestions = [];
+        }
+
         const subfield = this.activeSubfield.name;
         const kingdom = this.activeHierarchy[0];
         const field = this.activeHierarchy[1];
-        // Combine current concepts with any accumulated suggestions
         const existingInSubfield = this.activeSubfield.concepts.map(c => typeof c === 'string' ? c : c.name);
         const allKnown = [...new Set([...existingInSubfield, ...this.currentSuggestions])];
         const existingList = allKnown.join(', ');
@@ -183,22 +197,20 @@ class ScienceApp {
                 })
             });
             const data = await response.json();
-            if (!data.choices || data.choices.length === 0) {
-                if (data.error) throw new Error(data.error.message || "API Error");
-                throw new Error("Invalid API response format");
-            }
-            const content = data.choices[0].message.content.trim();
-            const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
-            const newSuggestions = JSON.parse(jsonStr);
-            if (newSuggestions.length === 0) {
-                completeMsg.classList.remove('hidden');
-                moreBtn.classList.add('hidden');
-            } else {
-                this.currentSuggestions = [...this.currentSuggestions, ...newSuggestions];
-                const cacheKey = `${this.activeHierarchy.join(' > ')}`;
-                this.suggestionsCache[cacheKey] = this.currentSuggestions;
-                localStorage.setItem('suggestionsCache', JSON.stringify(this.suggestionsCache));
-                this.displaySuggestions(this.currentSuggestions);
+            if (data.choices && data.choices[0]) {
+                const content = data.choices[0].message.content.trim();
+                const jsonStr = content.match(/\[.*\]/s)?.[0] || content;
+                const newSuggestions = JSON.parse(jsonStr);
+                if (newSuggestions.length === 0) {
+                    completeMsg.classList.remove('hidden');
+                    moreBtn.classList.add('hidden');
+                } else {
+                    this.currentSuggestions = [...this.currentSuggestions, ...newSuggestions];
+                    const cacheKey = `${this.activeHierarchy.join(' > ')}`;
+                    this.suggestionsCache[cacheKey] = this.currentSuggestions;
+                    localStorage.setItem('suggestionsCache', JSON.stringify(this.suggestionsCache));
+                    this.displaySuggestions(this.currentSuggestions);
+                }
             }
         } catch (error) {
             list.innerHTML += `<p style="color:red; font-size:0.8rem;">Error: ${error.message}</p>`;
@@ -232,32 +244,25 @@ class ScienceApp {
 
     addSelectedAI() {
         const checkboxes = document.querySelectorAll('#aiSuggestionsList input[type="checkbox"]:checked');
-        let addedCount = 0;
         checkboxes.forEach(cb => {
             const val = cb.value;
-            const normalized = val.toLowerCase().trim();
-            if (!this.allConcepts.has(normalized)) {
+            if (!this.allConcepts.has(val.toLowerCase().trim())) {
                 this.activeSubfield.concepts.push({ name: val, userAdded: true, aiSuggested: true });
                 this.userAdditions.push({ subfield: this.activeSubfield.name, concept: val, aiSuggested: true });
-                addedCount++;
             }
         });
-        if (addedCount > 0) this.saveAndRefresh();
+        this.saveAndRefresh();
     }
 
     addManual() {
         const input = document.getElementById('newConceptInput');
         const name = input.value.trim();
-        if (!name || !this.activeSubfield) return;
-        const normalized = name.toLowerCase().trim();
-        if (this.allConcepts.has(normalized)) {
-            alert(`Warning: "${name}" already exists in the taxonomy!`);
-            return;
+        if (name && !this.allConcepts.has(name.toLowerCase().trim())) {
+            this.activeSubfield.concepts.push({ name: name, userAdded: true, aiSuggested: false });
+            this.userAdditions.push({ subfield: this.activeSubfield.name, concept: name, aiSuggested: false });
+            input.value = '';
+            this.saveAndRefresh();
         }
-        this.activeSubfield.concepts.push({ name: name, userAdded: true, aiSuggested: false });
-        this.userAdditions.push({ subfield: this.activeSubfield.name, concept: name, aiSuggested: false });
-        input.value = '';
-        this.saveAndRefresh();
     }
 
     saveAndRefresh() {
@@ -265,32 +270,32 @@ class ScienceApp {
         this.detectDuplicates();
         this.render();
         this.updateStats();
-        this.displaySuggestions(this.currentSuggestions); // Refresh modal view
+        this.displaySuggestions(this.currentSuggestions);
     }
 
-    async showBibliography(concept) {
-        const title = document.getElementById('bibTitle');
-        const refs = document.getElementById('bibRefs');
-        const w = document.getElementById('linkWiki');
-        const s = document.getElementById('linkScholar');
-        const p = document.getElementById('linkSEP');
-        title.textContent = concept;
-        const query = encodeURIComponent(concept);
-        const underscore = concept.replace(/\s+/g, '_');
-        w.href = `https://en.wikipedia.org/wiki/${underscore}`;
-        s.href = `https://scholar.google.com/scholar?q=${query}`;
-        p.href = `https://plato.stanford.edu/search/searcher.py?query=${query}`;
+    async showLesson(concept) {
+        document.getElementById('bibTitle').textContent = concept;
+        const lessonSection = document.getElementById('lessonSection');
+        const lessonContent = document.getElementById('lessonContent');
+        const bibRefs = document.getElementById('bibRefs');
+        
+        lessonSection.classList.remove('hidden');
+        bibRefs.parentElement.classList.add('hidden'); // Hide refs while showing lesson
         document.getElementById('bibPanel').classList.add('active');
+
+        if (this.lessonCache[concept]) {
+            lessonContent.innerHTML = this.lessonCache[concept];
+            return;
+        }
+
         const apiKey = localStorage.getItem('openrouter_api_key');
         if (!apiKey) {
-            refs.innerHTML = `<p class="api-key-warning">Please set your OpenRouter API key in Settings to generate a live bibliography.</p>`;
+            lessonContent.innerHTML = `<p class="api-key-warning">Please set your OpenRouter API key in Settings.</p>`;
             return;
         }
-        if (this.bibCache[concept]) {
-            this.displayBibliography(concept, this.bibCache[concept]);
-            return;
-        }
-        refs.innerHTML = `<div class="spinner"></div><p style="text-align:center; font-size:0.8rem;">Consulting AI for academic references...</p>`;
+
+        lessonContent.innerHTML = `<div class="spinner"></div><p style="text-align:center;">Preparing a school lesson for you...</p>`;
+
         try {
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -298,29 +303,67 @@ class ScienceApp {
                 body: JSON.stringify({
                     "model": "google/gemini-2.0-flash-001",
                     "messages": [
-                        { "role": "system", "content": "You are an academic bibliography assistant. Return ONLY real, verified references. Do NOT invent or hallucinate any reference. If you are not certain a reference is real, do not include it. Format each reference as: Author(s) (Year). Title. Journal/Publisher. For each reference, include a one-line summary of why it is important." },
-                        { "role": "user", "content": `List 5 key academic references for the concept: ${concept}. Only include references you are confident are real published works.` }
+                        { "role": "system", "content": "You are a friendly school teacher. Explain the given science concept to a 10-year-old child. Break it down into 3 simple steps. Use a fun analogy. End with a real-life example of why we learn this. Format with simple HTML: use <div> with class 'lesson-step' for each step." },
+                        { "role": "user", "content": `Explain '${concept}' to a child.` }
                     ]
                 })
             });
             const data = await response.json();
-            if (!data.choices || data.choices.length === 0) {
-                if (data.error) throw new Error(data.error.message || "API Error");
-                throw new Error("Invalid API response format");
-            }
+            const content = data.choices[0].message.content;
+            this.lessonCache[concept] = content;
+            localStorage.setItem('lessonCache', JSON.stringify(this.lessonCache));
+            lessonContent.innerHTML = content;
+        } catch (e) { lessonContent.innerHTML = "Error: " + e.message; }
+    }
+
+    async showBibliography(concept) {
+        document.getElementById('bibTitle').textContent = concept;
+        document.getElementById('lessonSection').classList.add('hidden');
+        document.getElementById('bibRefs').parentElement.classList.remove('hidden');
+        document.getElementById('bibPanel').classList.add('active');
+        
+        const refs = document.getElementById('bibRefs');
+        const w = document.getElementById('linkWiki'), s = document.getElementById('linkScholar'), p = document.getElementById('linkSEP');
+        const query = encodeURIComponent(concept);
+        w.href = `https://en.wikipedia.org/wiki/${concept.replace(/\s+/g, '_')}`;
+        s.href = `https://scholar.google.com/scholar?q=${query}`;
+        p.href = `https://plato.stanford.edu/search/searcher.py?query=${query}`;
+
+        if (this.bibCache[concept]) {
+            this.displayBibliography(concept, this.bibCache[concept]);
+            return;
+        }
+
+        const apiKey = localStorage.getItem('openrouter_api_key');
+        if (!apiKey) {
+            refs.innerHTML = `<p class="api-key-warning">Set API key in Settings.</p>`;
+            return;
+        }
+
+        refs.innerHTML = `<div class="spinner"></div><p style="text-align:center;">Finding references...</p>`;
+        try {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+                body: JSON.stringify({
+                    "model": "google/gemini-2.0-flash-001",
+                    "messages": [
+                        { "role": "system", "content": "Academic assistant. List 5 real references for the concept. Format: Author (Year). Title. Publisher. Add 1-line importance check. No hallucinations." },
+                        { "role": "user", "content": `References for ${concept}` }
+                    ]
+                })
+            });
+            const data = await response.json();
             const content = data.choices[0].message.content.trim();
             this.bibCache[concept] = content;
             localStorage.setItem('bibCache', JSON.stringify(this.bibCache));
             this.displayBibliography(concept, content);
-        } catch (error) {
-            refs.innerHTML = `<p style="color:red; font-size:0.8rem;">Error generating bibliography: ${error.message}</p>`;
-        }
+        } catch (e) { refs.innerHTML = "Error: " + e.message; }
     }
 
     displayBibliography(concept, content) {
         const refs = document.getElementById('bibRefs');
-        const formattedContent = content.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
-        refs.innerHTML = `<div class="ref-item">${formattedContent}</div><div style="margin-top:20px; font-size:0.75rem; color:var(--text-secondary); border-top:1px solid var(--border); padding-top:10px;">⚠️ References are AI-generated and may contain errors. Verify via Google Scholar before citing.</div>`;
+        refs.innerHTML = `<div class="ref-item">${content.replace(/\n/g, '<br>')}</div><div style="margin-top:10px; font-size:0.7rem; opacity:0.7;">⚠️ AI generated. Verify on Google Scholar.</div>`;
     }
 
     render() {
@@ -389,9 +432,9 @@ class ScienceApp {
         ['.subfield', '.field', '.kingdom'].forEach(selector => {
             document.querySelectorAll(selector).forEach(node => {
                 const nameMatch = node.querySelector('.node-name').textContent.toLowerCase().includes(term);
-                const childMatch = node.querySelectorAll(selector === '.subfield' ? '.concept-tag:not(.hidden)' : (selector === '.field' ? '.subfield:not(.hidden)' : '.field:not(.hidden)')).length > 0;
-                node.classList.toggle('hidden', term && !nameMatch && !childMatch);
-                if (term && (nameMatch || childMatch)) node.classList.remove('collapsed');
+                const hasVisible = node.querySelectorAll('.concept-tag:not(.hidden), .subfield:not(.hidden), .field:not(.hidden)').length > 0;
+                node.classList.toggle('hidden', term && !nameMatch && !hasVisible);
+                if (term && (nameMatch || hasVisible)) node.classList.remove('collapsed');
             });
         });
     }
