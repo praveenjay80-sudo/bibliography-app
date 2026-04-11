@@ -164,13 +164,13 @@ class ScienceApp {
         if (isField) {
             const existingSubfields = (this.activeTargetNode.subfields || []).map(s => s.name);
             const allKnown = [...new Set([...existingSubfields, ...this.currentSuggestions])];
-            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established subfields that are missing. Only suggest subfields that genuinely belong in this field. Do NOT repeat any subfield already in the list. Return ONLY a JSON array of strings.";
-            userPrompt = `Field: ${targetName} in ${kingdom}. These subfields already exist: ${allKnown.join(', ')}. Suggest 5-10 MORE real subfields that are missing. If no more exist, return [].`;
+            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established subfields for the given field based on standardized scientific classifications (like MSC2020 for math or PACS for physics). Only suggest high-level subfields that genuinely belong here. For every subfield you suggest, you MUST include a list of 5-10 core, foundational concepts that define that subfield. Do NOT repeat any subfield already in the list. Return ONLY a JSON array of objects, each with 'name' (string) and 'foundationalConcepts' (array of strings).";
+            userPrompt = `Field: ${targetName} in ${kingdom}. These subfields already exist: ${allKnown.join(', ')}. Suggest 5-10 MORE real subfields that are missing. For each, include its core foundational concepts. Return strictly as JSON array of objects: [{"name": "Subfield Name", "foundationalConcepts": ["C1", "C2"...]}, ...]`;
         } else {
             const field = this.activeHierarchy[1];
             const existingConcepts = (this.activeTargetNode.concepts || []).map(c => typeof c === 'string' ? c : c.name);
             const allKnown = [...new Set([...existingConcepts, ...this.currentSuggestions])];
-            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established concepts that are missing from this subfield. Do NOT repeat any concept already in the list. Return ONLY a JSON array of strings.";
+            systemPrompt = "You are an expert academic taxonomy assistant. Suggest additional real, established concepts that are missing from this subfield. Cross-reference with standard academic curricula. Do NOT repeat any concept already in the list. Return ONLY a JSON array of strings.";
             userPrompt = `Subfield: ${targetName} in ${field} (${kingdom}). These concepts already exist: ${allKnown.join(', ')}. Suggest 10-20 MORE concepts that are DIFFERENT from all of these. If no more exist, return [].`;
         }
         try {
@@ -198,59 +198,88 @@ class ScienceApp {
     }
     displaySuggestions(suggestions) {
         const list = document.getElementById('aiSuggestionsList'), stats = document.getElementById('modalStats');
+        const isField = this.activeTargetNode.type === 'field';
         list.innerHTML = '';
         let matchedInApp = 0;
-        suggestions.forEach((concept, index) => {
-            const normalized = concept.toLowerCase().trim();
-            const exists = this.allConcepts.has(normalized);
+        
+        suggestions.forEach((item, index) => {
+            const name = typeof item === 'string' ? item : item.name;
+            const normalized = name.toLowerCase().trim();
+            
+            // Smarter duplicate check: Check against all levels of hierarchy
+            let exists = false;
+            if (isField) {
+                // Check if this subfield name already exists within this FIELD or as a FIELD name or within other KINGDOMS
+                exists = Array.from(document.querySelectorAll('.node-name')).some(el => el.textContent.toLowerCase().trim() === normalized);
+            } else {
+                // Concepts check
+                exists = this.allConcepts.has(normalized);
+            }
+
             if (exists) matchedInApp++;
             const div = document.createElement('div');
             div.className = 'suggestion-item';
-            div.innerHTML = `<input type="checkbox" id="sug-${index}" value="${concept}" ${exists ? 'disabled' : ''}><label for="sug-${index}" style="${exists ? 'opacity:0.5; text-decoration:line-through;' : ''}">${concept} ${exists ? '<span style="font-size:0.7rem;">(Exists)</span>' : ''}</label>`;
+            div.innerHTML = `<input type="checkbox" id="sug-${index}" ${exists ? 'disabled' : ''}><label for="sug-${index}" style="${exists ? 'opacity:0.5; text-decoration:line-through;' : ''}">${name} ${exists ? '<span style="font-size:0.7rem;">(Duplicate Detected)</span>' : ''}</label>`;
+            div.querySelector('input').value = JSON.stringify(item); // Store full object stringified
             list.appendChild(div);
         });
         document.getElementById('sugCount').textContent = `${suggestions.length} suggestions available`;
-        document.getElementById('addedCount').textContent = `${matchedInApp} in taxonomy`;
+        document.getElementById('addedCount').textContent = `${matchedInApp} existing/duplicates`;
         stats.classList.remove('hidden');
         document.getElementById('addSelectedAI').classList.remove('hidden');
         document.getElementById('suggestMoreAI').classList.remove('hidden');
     }
+
     addSelectedAI() {
         const checkboxes = document.querySelectorAll('#aiSuggestionsList input[type="checkbox"]:checked');
         const isField = this.activeTargetNode.type === 'field';
         checkboxes.forEach(cb => {
-            const val = cb.value;
+            const item = JSON.parse(cb.value);
+            const name = typeof item === 'string' ? item : item.name;
+
             if (isField) {
-                if (!this.activeTargetNode.subfields.some(s => s.name === val)) {
-                    this.activeTargetNode.subfields.push({ name: val, type: 'subfield', concepts: [], userAdded: true });
-                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: val, type: 'subfield' });
+                if (!this.activeTargetNode.subfields) this.activeTargetNode.subfields = [];
+                if (!this.activeTargetNode.subfields.some(s => s.name === name)) {
+                    // Populate with foundational concepts if available
+                    const concepts = item.foundationalConcepts || [];
+                    const newSub = { name: name, type: 'subfield', concepts: concepts, userAdded: true };
+                    this.activeTargetNode.subfields.push(newSub);
+                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'subfield', foundationalConcepts: concepts });
                 }
             } else {
-                if (!this.allConcepts.has(val.toLowerCase().trim())) {
-                    this.activeTargetNode.concepts.push({ name: val, userAdded: true, aiSuggested: true });
-                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: val, type: 'concept', aiSuggested: true });
+                if (!this.activeTargetNode.concepts) this.activeTargetNode.concepts = [];
+                if (!this.allConcepts.has(name.toLowerCase().trim())) {
+                    this.activeTargetNode.concepts.push({ name: name, userAdded: true, aiSuggested: true });
+                    this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'concept', aiSuggested: true });
                 }
             }
         });
         this.saveAndRefresh();
+        document.getElementById('addModal').classList.remove('active');
     }
+
     addManual() {
-        const name = document.getElementById('newConceptInput').value.trim();
+        const input = document.getElementById('newConceptInput');
+        const name = input.value.trim();
         if (!name) return;
         const isField = this.activeTargetNode.type === 'field';
         if (isField) {
+            if (!this.activeTargetNode.subfields) this.activeTargetNode.subfields = [];
             if (!this.activeTargetNode.subfields.some(s => s.name === name)) {
-                this.activeTargetNode.subfields.push({ name: name, type: 'subfield', concepts: [], userAdded: true });
+                const newSub = { name: name, type: 'subfield', concepts: [], userAdded: true };
+                this.activeTargetNode.subfields.push(newSub);
                 this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'subfield' });
             }
         } else {
+            if (!this.activeTargetNode.concepts) this.activeTargetNode.concepts = [];
             if (!this.allConcepts.has(name.toLowerCase().trim())) {
                 this.activeTargetNode.concepts.push({ name: name, userAdded: true, aiSuggested: false });
                 this.userAdditions.push({ parentName: this.activeTargetNode.name, name: name, type: 'concept', aiSuggested: false });
             }
         }
-        document.getElementById('newConceptInput').value = '';
+        input.value = '';
         this.saveAndRefresh();
+        document.getElementById('addModal').classList.remove('active');
     }
     saveAndRefresh() {
         localStorage.setItem('userAdditions', JSON.stringify(this.userAdditions));
