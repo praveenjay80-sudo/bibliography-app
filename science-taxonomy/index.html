@@ -213,25 +213,14 @@
             justify-content: center;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .bib-btn::after {
-            content: "Refs";
-            font-size: 0.65rem;
-            font-weight: 600;
-            margin-left: 3px;
-            text-transform: uppercase;
-        }
-        .lesson-btn::after {
-            content: "Lesson";
-            font-size: 0.65rem;
-            font-weight: 600;
-            margin-left: 3px;
-            text-transform: uppercase;
+        .bib-btn::after, .lesson-btn::after {
+            display: none !important;
+            content: "" !important;
         }
         .bib-btn:hover, .lesson-btn:hover { 
             transform: translateY(-1px);
             background: var(--bg-secondary);
             border-color: var(--accent-formal);
-            color: var(--accent-formal);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .bib-btn:active, .lesson-btn:active {

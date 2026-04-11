@@ -114,8 +114,8 @@ class ScienceApp {
                     tag.title = "Duplicate detected!";
                 }
                 tag.innerHTML = `<span>${conceptName}</span>
-                    <span class="lesson-btn" title="AI School Lesson"></span>
-                    <span class="bib-btn" title="Bibliography"></span>`;
+                    <span class="lesson-btn" title="AI School Lesson">💡</span>
+                    <span class="bib-btn" title="Bibliography">🔖</span>`;
                 
                 tag.querySelector('.bib-btn').onclick = (e) => {
                     e.stopPropagation();
