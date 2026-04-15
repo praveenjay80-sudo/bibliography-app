@@ -1,0 +1,9 @@
+{
+  "builds": [
+    { "src": "FormalSciencesBibliographer.html", "use": "@vercel/static" },
+    { "src": "msc_taxonomy.json", "use": "@vercel/static" }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/FormalSciencesBibliographer.html" }
+  ]
+}
