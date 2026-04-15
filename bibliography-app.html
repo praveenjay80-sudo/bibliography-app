@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formal Sciences Bibliography</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex; 
+            margin: 0;
+            height: 100vh;
+        }
+        #taxonomy { 
+            width: 35%; 
+            height: 100%; 
+            overflow-y: auto; 
+            border-right: 1px solid #ddd;
+            padding: 15px; 
+            box-sizing: border-box;
+        }
+        #details { 
+            width: 65%; 
+            padding: 15px; 
+            box-sizing: border-box;
+            height: 100%;
+            overflow-y: auto;
+        }
+        h2 { 
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        ul { 
+            list-style-type: none; 
+            padding-left: 20px; 
+        }
+        li { 
+            cursor: pointer; 
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        li:hover { 
+            background-color: #f0f0f0; 
+        }
+        .selected { 
+            background-color: #007bff;
+            color: white;
+        }
+        #apiKey {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #bibliography-container {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="taxonomy">
+        <h2>Taxonomy</h2>
+        <div id="taxonomy-tree"></div>
+    </div>
+    <div id="details">
+        <h2>Bibliography</h2>
+        <input type="password" id="apiKey" placeholder="Enter your OpenRouter API Key" style="width: 100%; margin-bottom: 10px;">
+        <div id="bibliography-container"></div>
+    </div>
+
+    <script src="formal_sciences_taxonomy.js"></script>
+    <script>
+
+        const taxonomyContainer = document.getElementById('taxonomy-tree');
+        const apiKeyInput = document.getElementById('apiKey');
+        const bibliographyContainer = document.getElementById('bibliography-container');
+
+        let openRouterApiKey = localStorage.getItem('openRouterApiKey');
+        if (openRouterApiKey) {
+            apiKeyInput.value = openRouterApiKey;
+        }
+
+        apiKeyInput.addEventListener('change', () => {
+            openRouterApiKey = apiKeyInput.value;
+            localStorage.setItem('openRouterApiKey', openRouterApiKey);
+        });
+
+        function createTree(node, container) {
+            const ul = document.createElement('ul');
+            if (node.children) {
+                node.children.forEach(child => {
+                    const li = document.createElement('li');
+                    li.textContent = child.name;
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Clear previous selection
+                        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                        // Add selection to current
+                        li.classList.add('selected');
+                        // Fetch bibliography
+                        fetchBibliography(child.name);
+                    });
+                    if (child.children) {
+                        createTree(child, li);
+                    }
+                    ul.appendChild(li);
+                });
+            }
+            container.appendChild(ul);
+        }
+
+        createTree(taxonomyData, taxonomyContainer);
+
+        async function fetchBibliography(term) {
+            if (!openRouterApiKey) {
+                bibliographyContainer.innerHTML = 'Please enter your OpenRouter API key.';
+                return;
+            }
+
+            bibliographyContainer.innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${openRouterApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "model": "google/gemini-pro",
+                        "messages": [
+                            { "role": "system", "content": "You are a helpful assistant that provides bibliographies." },
+                            { "role": "user", "content": `Provide a comprehensive bibliography for the formal sciences topic: \"${term}\". Include books and research papers.` }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    bibliographyContainer.innerHTML = `Error: ${response.status} ${response.statusText} - ${errorData.error.message}`;
+                    return;
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                // Basic markdown to HTML conversion
+                let htmlContent = content.replace(/\n/g, '<br>');
+                bibliographyContainer.innerHTML = htmlContent;
+
+            } catch (error) {
+                bibliographyContainer.innerHTML = `Error fetching bibliography: ${error.message}`;
+            }
+        }
+    
+    </script>
+</body>
+</html>
