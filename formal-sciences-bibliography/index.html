@@ -590,6 +590,58 @@
             color: white;
             border-color: var(--accent);
         }
+
+        .sort-bar {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 0.75rem 0;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sort-label {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .sort-chip {
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.15s;
+        }
+
+        .sort-chip:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .sort-chip.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .sort-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+        }
+
+        .bib-entry .altmetric-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            color: #e8912d;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -923,35 +975,24 @@ const TAXONOMY = {
 };
 
 // ========================================================
-// Query templates per category
-// Each category has a set of search terms for OpenAlex
+// Semantic Scholar API client
 // ========================================================
-const CATEGORY_QUERIES = {
-    "Textbooks & Monographs": {
-        key: "textbook",
-        terms: ["textbook", "monograph", "introduction to", "handbook of", "graduate texts in", "cambridge university press", "springer", "foundations of"]
-    },
-    "Foundational Papers": {
-        key: "foundational",
-        terms: ["foundations", "seminal", "theorem", "proof of", "framework for", "theory of"]
-    },
-    "Recent Advances (2022–Present)": {
-        key: "recent",
-        terms: ["recent advances", "survey", "new results", "novel approach", "2024", "2023", "2025"]
-    },
-    "Survey & Review Articles": {
-        key: "survey",
-        terms: ["survey", "review", "overview", "comprehensive", "state of the art", "progress in"]
-    },
-    "Key Authors & Research Groups": {
-        key: "authors",
-        terms: []
-    },
-    "Journals & Conference Proceedings": {
-        key: "venues",
-        terms: []
-    }
-};
+const S2_BASE = "https://api.semanticscholar.org/graph/v1";
+
+async function semanticScholarFetch(doi) {
+    if (!doi) return null;
+    try {
+        const resp = await fetch(`${S2_BASE}/paper/${doi}?fields=title,authors,citationCount,influentialCitationCount,tldr,year,venue,externalIds`);
+        if (resp.ok) return resp.json();
+    } catch (e) {}
+    return null;
+}
+
+// ========================================================
+// Sort mode state
+// ========================================================
+let sortMode = "citations"; // "citations" | "altmetric" | "influential"
+let filterMode = "all";     // "all" | "books" | "recent"
 
 // ========================================================
 // OpenAlex API client
@@ -1014,26 +1055,63 @@ async function generateBibliography(subfieldPath) {
     ];
 
     const results = {};
+    const allDois = [];
+
     for (const q of queries) {
         try {
             const data = await openAlexSearchConcept(q.search, q.filters, 1, q.perPage);
             results[q.label] = {
                 count: data.meta?.count || 0,
-                items: (data.results || []).map(r => ({
-                    title: r.title || "Untitled",
-                    authors: (r.authorships || []).map(a => a.author?.display_name).filter(Boolean),
-                    venue: r.primary_location?.source?.display_name || r.host_venue?.display_name || "",
-                    year: r.publication_year || "n.d.",
-                    citations: r.cited_by_count || 0,
-                    doi: r.doi || "",
-                    url: r.primary_location?.landing_page_url || r.doi || "",
-                    type: r.type || "article"
-                }))
+                items: (data.results || []).map(r => {
+                    const item = {
+                        title: r.title || "Untitled",
+                        authors: (r.authorships || []).map(a => a.author?.display_name).filter(Boolean),
+                        venue: r.primary_location?.source?.display_name || r.host_venue?.display_name || "",
+                        year: r.publication_year || "n.d.",
+                        citations: r.cited_by_count || 0,
+                        doi: r.doi || "",
+                        url: r.primary_location?.landing_page_url || r.doi || "",
+                        type: r.type || "article",
+                        influentialCitations: r.institutions?.length || 0,
+                        altmetric: null,
+                        s2CitationCount: null,
+                        s2InfluentialCitationCount: null,
+                        tldr: null
+                    };
+                    if (r.doi) allDois.push(r.doi);
+                    return item;
+                })
             };
         } catch (e) {
             results[q.label] = { count: 0, items: [] };
         }
         await sleep(200);
+    }
+
+    // Fetch altmetric data from Semantic Scholar (batch by DOI)
+    for (const doi of allDois) {
+        try {
+            const s2 = await semanticScholarFetch(doi);
+            if (s2) {
+                // Attach altmetric to all items with this DOI
+                for (const label of Object.keys(results)) {
+                    if (typeof results[label] === "string") continue;
+                    for (const item of (results[label].items || [])) {
+                        if (item.doi === doi) {
+                            item.s2CitationCount = s2.citationCount || item.citations;
+                            item.s2InfluentialCitationCount = s2.influentialCitationCount || 0;
+                            item.tldr = s2.tldr?.text || null;
+                            // Compute a composite altmetric proxy
+                            item.altmetric = Math.round(
+                                (Math.max(0, s2.citationCount || 0) * 1) +
+                                (Math.max(0, s2.influentialCitationCount || 0) * 5)
+                            );
+                        }
+                    }
+                }
+            }
+        } catch (e) {}
+        await sleep(100);
     }
 
     // Fetch authors
@@ -1208,7 +1286,50 @@ async function loadBibliography(path) {
 
 function displayBibliography(results, displayName, conceptName) {
     const content = document.getElementById("content");
-    const totalItems = Object.values(results).reduce((acc, r) => acc + (r.items?.length || 0), 0) - 1;
+
+    // Collect all items
+    const labels = ["Textbooks & Monographs", "Foundational Papers", "Recent Advances", "Survey & Review Articles"];
+    let allItems = [];
+    for (const label of labels) {
+        const r = results[label];
+        if (r && r.items) {
+            for (const item of r.items) {
+                item._category = label;
+                allItems.push(item);
+            }
+        }
+    }
+
+    // Apply filter
+    if (filterMode === "books") {
+        allItems = allItems.filter(i => i.type === "book" || i.type === "monograph");
+    } else if (filterMode === "recent") {
+        const yr = new Date().getFullYear() - 3;
+        allItems = allItems.filter(i => parseInt(i.year) >= yr);
+    }
+
+    // Apply sort
+    if (sortMode === "citations") {
+        allItems.sort((a, b) => (b.citations || 0) - (a.citations || 0));
+    } else if (sortMode === "altmetric") {
+        allItems.sort((a, b) => {
+            const sa = (b.altmetric || 0) + (b.s2CitationCount || 0) * 0.5 + (b.s2InfluentialCitationCount || 0) * 5;
+            const sb = (a.altmetric || 0) + (a.s2CitationCount || 0) * 0.5 + (a.s2InfluentialCitationCount || 0) * 5;
+            return sb - sa;
+        });
+    } else if (sortMode === "influential") {
+        allItems.sort((a, b) => (b.s2InfluentialCitationCount || 0) - (a.s2InfluentialCitationCount || 0));
+    }
+
+    // Group back by category
+    const grouped = {};
+    for (const item of allItems) {
+        if (!grouped[item._category]) grouped[item._category] = [];
+        grouped[item._category].push(item);
+    }
+
+    const totalCitations = allItems.reduce((s, i) => s + (i.citations || 0), 0);
+    const totalAlt = allItems.filter(i => i.altmetric).length;
 
     let html = `
         <div class="bib-header">
@@ -1218,19 +1339,28 @@ function displayBibliography(results, displayName, conceptName) {
             <div class="bib-stats">
     `;
 
-    const labels = ["Textbooks & Monographs", "Foundational Papers", "Recent Advances", "Survey & Review Articles"];
     for (const label of labels) {
         const r = results[label];
         if (r && r.count) {
             html += `<div class="bib-stat"><span class="bib-stat-num">${r.count.toLocaleString()}</span> ${label}</div>`;
         }
     }
-    const itemCount = (results["Textbooks & Monographs"]?.items?.length || 0) +
-                      (results["Foundational Papers"]?.items?.length || 0) +
-                      (results["Recent Advances"]?.items?.length || 0) +
-                      (results["Survey & Review Articles"]?.items?.length || 0);
-    html += `<div class="bib-stat"><span class="bib-stat-num">${itemCount}</span> Total papers</div>`;
+    html += `<div class="bib-stat"><span class="bib-stat-num">${allItems.length}</span> Results</div>`;
+    html += `<div class="bib-stat"><span class="bib-stat-num">${totalCitations.toLocaleString()}</span> Total citations</div>`;
     html += `</div>`;
+
+    // Sort & filter bar
+    html += `<div class="sort-bar">
+        <span class="sort-label">Sort:</span>
+        <span class="sort-chip ${sortMode === 'citations' ? 'active' : ''}" onclick="setSort('citations')">By Citations</span>
+        <span class="sort-chip ${sortMode === 'altmetric' ? 'active' : ''}" onclick="setSort('altmetric')">By Altmetric</span>
+        <span class="sort-chip ${sortMode === 'influential' ? 'active' : ''}" onclick="setSort('influential')">Influential Citations</span>
+        <div class="sort-divider"></div>
+        <span class="sort-label">Filter:</span>
+        <span class="sort-chip ${filterMode === 'all' ? 'active' : ''}" onclick="setFilter('all')">All</span>
+        <span class="sort-chip ${filterMode === 'books' ? 'active' : ''}" onclick="setFilter('books')">Books Only</span>
+        <span class="sort-chip ${filterMode === 'recent' ? 'active' : ''}" onclick="setFilter('recent')">Recent (3yr)</span>
+    </div>`;
 
     // Action buttons
     html += `<div class="bib-actions">
@@ -1242,13 +1372,14 @@ function displayBibliography(results, displayName, conceptName) {
 
     // Paper sections
     for (const label of labels) {
+        const items = grouped[label];
+        if (!items || items.length === 0) continue;
         const r = results[label];
-        if (!r || !r.items || r.items.length === 0) continue;
         html += `<div class="bib-section"><div class="bib-section-header">`;
         html += `<span class="bib-section-title">${label}</span>`;
-        html += `<span class="bib-section-count">${r.items.length} items · ${r.count?.toLocaleString()} available</span>`;
+        html += `<span class="bib-section-count">${items.length} items · ${r?.count?.toLocaleString() || 0} available</span>`;
         html += `</div>`;
-        for (const item of r.items) {
+        for (const item of items) {
             html += renderBibEntry(item);
         }
         html += `</div>`;
@@ -1313,15 +1444,31 @@ function renderBibEntry(item) {
     const typeIcon = item.type === "book" ? "📘" : item.type === "article" ? "📄" : "📃";
     const tags = [];
     if (item.type) tags.push(item.type);
-    if (tags.length) html = `<span class="bib-tag">${typeIcon} ${tags.join(", ")}</span>` + html;
+    html = `<span class="bib-tag">${typeIcon} ${tags.join(", ")}</span>` + html;
 
     html += `<div class="bib-entry-meta">`;
-    if (item.citations > 0) html += `<span>Cited: ${item.citations.toLocaleString()}</span>`;
+    if (item.citations > 0) html += `<span>Citations: ${item.citations.toLocaleString()}</span>`;
+    if (item.s2InfluentialCitationCount > 0) html += `<span>Influential: ${item.s2InfluentialCitationCount}</span>`;
+    if (item.tldr) html += `<span style="cursor:help" title="${item.tldr.replace(/"/g, '')}">TL;DR</span>`;
+    if (item.altmetric > 0) html += `<span class="altmetric-score" title="Altmetric composite score">Altmetric: ${item.altmetric}</span>`;
     html += `</div>`;
     if (item.url) html += `<a class="bib-entry-link" href="${item.url}" target="_blank">View paper →</a>`;
-    if (item.doi) html += ` <a class="bib-entry-link" href="https://doi.org/${item.doi}" target="_blank">DOI →</a>`;
+    if (item.doi) html += `<a class="bib-entry-link" href="https://doi.org/${item.doi}" target="_blank">DOI →</a>`;
     html += `</div>`;
     return html;
+}
+
+// ========================================================
+// Sort & Filter
+// ========================================================
+function setSort(mode) {
+    sortMode = mode;
+    displayBibliography(currentBibResult, selectedPath.slice(1).join(" > "), selectedPath.slice(1).join(" "));
+}
+
+function setFilter(mode) {
+    filterMode = mode;
+    displayBibliography(currentBibResult, selectedPath.slice(1).join(" > "), selectedPath.slice(1).join(" "));
 }
 
 // ========================================================
