@@ -15,6 +15,8 @@
             --accent: #8b5cf6;
             --accent-hover: #7c3aed;
             --accent-pale: rgba(139, 92, 246, 0.06);
+            --green: #10b981;
+            --green-pale: rgba(16, 185, 129, 0.06);
             --radius: 10px;
             --shadow: 0 1px 3px rgba(0,0,0,0.06);
             --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -29,618 +31,251 @@
             --text-light: #64748b;
             --border: #2d3348;
             --accent-pale: rgba(139, 92, 246, 0.1);
+            --green-pale: rgba(16, 185, 129, 0.1);
             --shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.6; }
 
         header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: 0.75rem 1.5rem;
-            backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 100;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem; backdrop-filter: blur(8px);
         }
 
         .header-inner {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+            max-width: 1400px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
         }
 
-        .logo {
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        .logo { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .accent-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
 
-        .accent-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
 
         .icon-btn {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.35rem 0.6rem;
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.15s;
+            background: none; border: 1px solid var(--border); border-radius: 6px;
+            padding: 0.35rem 0.6rem; color: var(--text-dim); cursor: pointer;
+            font-size: 0.85rem; transition: all 0.15s;
         }
+        .icon-btn:hover { color: var(--text); border-color: var(--accent); background: var(--accent-pale); }
 
-        .icon-btn:hover {
-            color: var(--text);
-            border-color: var(--accent);
-            background: var(--accent-pale);
-        }
+        .api-btn { border-color: var(--green) !important; color: var(--green) !important; font-weight: 500; }
+        .api-btn.no-key { border-style: dashed !important; }
+        .api-btn.has-key { border-style: solid !important; }
 
         .main-layout {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 320px 1fr;
+            max-width: 1400px; margin: 0 auto;
+            display: grid; grid-template-columns: 320px 1fr;
             min-height: calc(100vh - 56px);
         }
 
         /* --- Sidebar --- */
         .sidebar {
-            border-right: 1px solid var(--border);
-            background: var(--bg-card);
-            overflow-y: auto;
-            position: sticky;
-            top: 56px;
-            height: calc(100vh - 56px);
+            border-right: 1px solid var(--border); background: var(--bg-card);
+            overflow-y: auto; position: sticky; top: 56px; height: calc(100vh - 56px);
         }
 
         .sidebar-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: var(--bg-card);
-            z-index: 2;
+            padding: 1rem; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: var(--bg-card); z-index: 2;
         }
 
         .sidebar-search {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            font-size: 0.85rem;
-            background: var(--bg);
-            color: var(--text);
+            width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px;
+            border: 1px solid var(--border); font-size: 0.85rem;
+            background: var(--bg); color: var(--text);
         }
+        .sidebar-search:focus { outline: none; border-color: var(--accent); }
 
-        .sidebar-search:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .tree-container {
-            padding: 0.5rem;
-        }
+        .tree-container { padding: 0.5rem; }
 
         /* --- Tree --- */
-        .tree-item {
-            user-select: none;
-        }
+        .tree-item { user-select: none; }
 
         .tree-row {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.82rem;
-            transition: background 0.1s;
+            display: flex; align-items: center; gap: 4px;
+            padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer;
+            font-size: 0.82rem; transition: background 0.1s;
         }
-
-        .tree-row:hover {
-            background: var(--accent-pale);
-        }
-
-        .tree-row.active {
-            background: var(--accent);
-            color: white;
-        }
+        .tree-row:hover { background: var(--accent-pale); }
+        .tree-row.active { background: var(--accent); color: white; }
 
         .tree-toggle {
-            width: 16px;
-            height: 16px;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.15s;
-            color: var(--text-light);
+            width: 16px; height: 16px; font-size: 0.65rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: transform 0.15s; color: var(--text-light);
         }
 
-        .tree-label {
-            flex: 1;
-            min-width: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .tree-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tree-count { font-size: 0.65rem; color: var(--text-light); background: var(--bg); border-radius: 8px; padding: 1px 6px; flex-shrink: 0; }
+        .tree-row.active .tree-count { background: rgba(255,255,255,0.2); color: white; }
 
-        .tree-count {
-            font-size: 0.65rem;
-            color: var(--text-light);
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 1px 6px;
-            flex-shrink: 0;
-        }
-
-        .tree-row.active .tree-count {
-            background: rgba(255,255,255,0.2);
-            color: white;
-        }
-
-        .tree-children {
-            padding-left: 12px;
-        }
-
-        .tree-children.collapsed {
-            display: none;
-        }
+        .tree-children { padding-left: 12px; }
+        .tree-children.collapsed { display: none; }
 
         .tree-leaf {
-            font-size: 0.78rem;
-            padding: 0.25rem 0.5rem;
-            padding-left: 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-dim);
+            font-size: 0.78rem; padding: 0.25rem 0.5rem; padding-left: 20px;
+            border-radius: 4px; cursor: pointer; color: var(--text-dim);
         }
-
-        .tree-leaf:hover {
-            background: var(--accent-pale);
-            color: var(--text);
-        }
-
-        .tree-leaf.active {
-            background: var(--accent-pale);
-            color: var(--accent);
-            font-weight: 500;
-        }
+        .tree-leaf:hover { background: var(--accent-pale); color: var(--text); }
+        .tree-leaf.active { background: var(--accent-pale); color: var(--accent); font-weight: 500; }
 
         /* --- Content --- */
-        .content {
-            padding: 2rem;
-            overflow-y: auto;
-        }
+        .content { padding: 2rem; overflow-y: auto; }
 
         .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 60vh;
-            text-align: center;
-            color: var(--text-dim);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 60vh; text-align: center; color: var(--text-dim);
         }
+        .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+        .empty-state p { font-size: 0.9rem; max-width: 400px; }
 
-        .empty-state .emoji {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
+        /* --- Bibliography Display --- */
+        .bib-header { margin-bottom: 1.5rem; }
+        .bib-breadcrumb { font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.5rem; }
+        .bib-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .bib-subtitle { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1rem; }
 
-        .empty-state h2 {
-            font-size: 1.2rem;
-            color: var(--text);
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            font-size: 0.9rem;
-            max-width: 400px;
-        }
-
-        /* --- Bibliography Results --- */
-        .bib-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .bib-breadcrumb {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-        }
-
-        .bib-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .bib-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-        }
-
-        .bib-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .bib-action-btn {
-            padding: 0.4rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 0.78rem;
-            transition: all 0.15s;
-        }
-
-        .bib-action-btn:hover {
-            color: var(--text);
-            border-color: var(--accent);
-        }
-
-        .bib-action-btn.primary {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        /* --- Loading --- */
         .loading-bar {
-            height: 3px;
-            background: var(--border);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 1rem 0;
+            height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 1rem 0;
         }
-
         .loading-bar-inner {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 2px;
+            height: 100%; background: var(--accent); border-radius: 2px;
             animation: loading-progress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
+        @keyframes loading-progress { 0% { width: 0; } 50% { width: 70%; } 100% { width: 100%; } }
 
-        @keyframes loading-progress {
-            0% { width: 0; }
-            50% { width: 70%; }
-            100% { width: 100%; }
+        .spinner {
+            width: 24px; height: 24px; margin: 2rem auto;
+            border: 3px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* --- Category Section --- */
-        .bib-section {
-            margin-bottom: 1.5rem;
+        /* --- Explanation --- */
+        .explanation-box {
+            background: var(--green-pale); border: 1px solid var(--green);
+            border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem;
+            line-height: 1.7; font-size: 0.92rem;
         }
+        .explanation-box h3 {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--green); margin-bottom: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .explanation-box p { margin-bottom: 0.75rem; }
+        .explanation-box strong { color: var(--text); }
 
+        /* --- Bibliography Sections --- */
+        .bib-section { margin-bottom: 2rem; }
         .bib-section-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-bottom: 0.75rem; padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
         }
-
-        .bib-section-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .bib-section-count {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 2px 8px;
-        }
+        .bib-section-icon { font-size: 1.1rem; }
+        .bib-section-title { font-size: 0.95rem; font-weight: 700; }
+        .bib-section-desc { font-size: 0.75rem; color: var(--text-dim); margin-left: auto; }
 
         /* --- Bibliography Entry --- */
         .bib-entry {
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: var(--bg);
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            transition: border-color 0.15s;
+            padding: 0.75rem 1rem; margin-bottom: 0.4rem;
+            background: var(--bg-card); border-radius: 6px;
+            border: 1px solid var(--border); border-left: 3px solid var(--accent);
+            transition: all 0.15s;
         }
-
         .bib-entry:hover {
             border-color: var(--accent);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
         }
 
+        .bib-entry-number {
+            font-size: 0.65rem; font-weight: 700; color: var(--accent);
+            background: var(--accent-pale); border-radius: 3px;
+            padding: 1px 6px; margin-right: 8px; vertical-align: middle;
+        }
         .bib-entry-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            color: var(--text);
+            font-weight: 600; font-size: 0.9rem; display: inline;
         }
-
         .bib-entry-authors {
-            font-size: 0.78rem;
-            color: var(--text-dim);
-            margin-bottom: 0.2rem;
+            font-size: 0.78rem; color: var(--text-dim); margin: 0.2rem 0;
         }
-
         .bib-entry-venue {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            font-style: italic;
+            font-size: 0.75rem; color: var(--text-light); font-style: italic;
+        }
+        .bib-entry-note {
+            font-size: 0.78rem; color: var(--text-dim); margin-top: 0.3rem;
+            padding-left: 0.75rem; border-left: 2px solid var(--border);
         }
 
-        .bib-entry-meta {
-            display: flex;
-            gap: 1rem;
-            margin-top: 0.4rem;
-            font-size: 0.72rem;
-            color: var(--text-light);
+        /* --- Actions --- */
+        .bib-actions { display: flex; gap: 0.5rem; margin: 1rem 0 1.5rem; flex-wrap: wrap; }
+        .bib-action-btn {
+            padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--bg-card); color: var(--text-dim); cursor: pointer;
+            font-size: 0.78rem; transition: all 0.15s;
         }
+        .bib-action-btn:hover { color: var(--text); border-color: var(--accent); }
+        .bib-action-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+        .bib-action-btn.primary:hover { background: var(--accent-hover); }
 
-        .bib-entry-meta span {
-            display: flex;
-            align-items: center;
-            gap: 3px;
+        /* --- Modal --- */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: all 0.2s;
         }
-
-        .bib-entry-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.75rem;
-            color: var(--accent);
-            text-decoration: none;
-            margin-top: 0.3rem;
+        .modal-backdrop.open { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 450px;
         }
-
-        .bib-entry-link:hover {
-            text-decoration: underline;
+        .modal-box h3 { margin-bottom: 1rem; font-size: 1.1rem; }
+        .modal-input {
+            width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); font-size: 0.9rem;
+            font-family: var(--mono); margin-bottom: 1rem;
         }
-
-        .bib-tag {
-            display: inline-block;
-            font-size: 0.65rem;
-            padding: 1px 6px;
-            border-radius: 3px;
-            background: var(--accent-pale);
-            color: var(--accent);
-            margin-right: 4px;
+        .modal-input:focus { outline: none; border-color: var(--accent); }
+        .modal-hint { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 1rem; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+        .modal-btn {
+            padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); cursor: pointer; font-size: 0.82rem;
         }
-
-        /* --- Stats Bar --- */
-        .bib-stats {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .bib-stat {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.82rem;
-            padding: 0.35rem 0.6rem;
-            background: var(--bg);
-            border-radius: 6px;
-            border: 1px solid var(--border);
-        }
-
-        .bib-stat-num {
-            font-weight: 700;
-            color: var(--accent);
-            font-size: 1rem;
-        }
+        .modal-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
 
         /* --- Toast --- */
         .toast {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            background: var(--accent);
-            color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--accent); color: white; padding: 0.6rem 1rem;
+            border-radius: 8px; font-size: 0.85rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 9999;
-            animation: slidein 0.2s ease;
+            z-index: 9999; animation: slidein 0.2s ease;
         }
+        @keyframes slidein { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        @keyframes slidein {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* --- Mobile --- */
-        .mobile-toggle {
-            display: none;
-        }
-
-        @media (max-width: 900px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                display: none;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                width: 100%;
-                height: calc(100vh - 56px);
-                z-index: 200;
-            }
-
-            .sidebar.open {
-                display: block;
-            }
-
-            .mobile-toggle {
-                display: block;
-            }
-
-            .content {
-                padding: 1rem;
-            }
-        }
-
+        /* --- Print --- */
         @media print {
             header, .sidebar, .bib-actions, .mobile-toggle { display: none !important; }
             .main-layout { grid-template-columns: 1fr; }
-            .bib-entry { break-inside: avoid; border: 1px solid #ccc; }
+            .bib-entry { break-inside: avoid; }
         }
 
-        /* --- Export modal --- */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s;
-        }
-
-        .modal-backdrop.open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-box h3 {
-            margin-bottom: 1rem;
-        }
-
-        .export-code {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 1rem;
-            font-family: var(--mono);
-            font-size: 0.75rem;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .export-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 0.82rem;
-        }
-
-        .export-btn:hover {
-            border-color: var(--accent);
-        }
-
-        .export-btn.primary {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .sort-bar {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-            padding: 0.75rem 0;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .sort-label {
-            font-size: 0.78rem;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        .sort-chip {
-            padding: 0.3rem 0.7rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text-dim);
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.15s;
-        }
-
-        .sort-chip:hover {
-            border-color: var(--accent);
-            color: var(--text);
-        }
-
-        .sort-chip.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .sort-divider {
-            width: 1px;
-            height: 16px;
-            background: var(--border);
-        }
-
-        .bib-entry .altmetric-score {
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            color: #e8912d;
-            font-weight: 600;
+        /* --- Mobile --- */
+        .mobile-toggle { display: none; }
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .sidebar {
+                display: none; position: fixed; top: 56px; left: 0;
+                width: 100%; height: calc(100vh - 56px); z-index: 200;
+            }
+            .sidebar.open { display: block; }
+            .mobile-toggle { display: block; }
+            .content { padding: 1rem; }
         }
     </style>
 </head>
@@ -653,6 +288,7 @@
             Formal Sciences Bibliographer
         </div>
         <div class="header-actions">
+            <button class="icon-btn api-btn" id="apiStatusBtn" onclick="openApiSettings()">Set API Key</button>
             <button class="icon-btn" onclick="toggleDark()" id="themeBtn">Dark</button>
             <button class="icon-btn mobile-toggle" onclick="toggleSidebar()">Tree</button>
         </div>
@@ -669,29 +305,42 @@
 
     <main class="content" id="content">
         <div class="empty-state">
-            <div class="emoji">&#22117;</div>
+            <div class="emoji">&#x1F4DA;</div>
             <h2>Select a subfield</h2>
-            <p>Choose any subfield from the taxonomy tree on the left to generate a comprehensive bibliography.</p>
+            <p>Choose any formal science subfield from the taxonomy tree to get a beginner-friendly explanation and a curated seminal bibliography.</p>
         </div>
     </main>
 </div>
 
-<!-- Export modal -->
+<!-- API Key Settings Modal -->
+<div class="modal-backdrop" id="apiModal">
+    <div class="modal-box">
+        <h3>OpenRouter API Key</h3>
+        <p class="modal-hint">Get a free key at <a href="https://openrouter.ai" target="_blank" style="color:var(--accent);">openrouter.ai</a>. Your key is stored only in your browser.</p>
+        <input type="password" class="modal-input" id="apiKeyInput" placeholder="sk-or-v1-...">
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="closeApiSettings()">Cancel</button>
+            <button class="modal-btn primary" onclick="saveApiKey()">Save & Refresh</button>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
 <div class="modal-backdrop" id="exportModal">
     <div class="modal-box">
         <h3 id="exportTitle">Export</h3>
-        <pre class="export-code" id="exportCode"></pre>
-        <div class="export-buttons">
-            <button class="export-btn" onclick="copyExport()">Copy</button>
-            <button class="export-btn primary" id="downloadBtn" onclick="downloadExport()">Download</button>
-            <button class="export-btn" onclick="closeExport()">Close</button>
+        <pre class="modal-hint" id="exportPreview" style="max-height:300px;overflow-y:auto;font-size:0.75rem;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);background:var(--bg);padding:1rem;border-radius:6px;border:1px solid var(--border);"></pre>
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="copyExport()">Copy</button>
+            <button class="modal-btn" onclick="downloadExport()">Download</button>
+            <button class="modal-btn" onclick="closeExport()">Close</button>
         </div>
     </div>
 </div>
 
 <script>
 // ========================================================
-// Formal Sciences Taxonomy (embedded)
+// Taxonomy (embedded)
 // ========================================================
 const TAXONOMY = {
     "name": "Formal Sciences",
@@ -713,10 +362,8 @@ const TAXONOMY = {
                 { "name": "Fuzzy Logic" },
                 { "name": "Linear Logic" },
                 { "name": "Paraconsistent Logic" },
-                { "name": "Paraconsistent Logic" },
                 { "name": "Deontic Logic" },
                 { "name": "Epistemic Logic" },
-                { "name": "Doxastic Logic" },
                 { "name": "Dynamic Logic" },
                 { "name": "Quantum Logic" },
                 { "name": "Many-Valued Logic" },
@@ -784,7 +431,6 @@ const TAXONOMY = {
                 { "name": "Symplectic Geometry" },
                 { "name": "Algebraic Geometry" },
                 { "name": "Projective Geometry" },
-                { "name": "Non-Euclidean Geometry" },
                 { "name": "Convex Geometry" },
                 { "name": "Discrete Geometry" },
                 { "name": "Topology" },
@@ -975,320 +621,409 @@ const TAXONOMY = {
 };
 
 // ========================================================
-// Semantic Scholar API client
-// ========================================================
-const S2_BASE = "https://api.semanticscholar.org/graph/v1";
-
-async function semanticScholarFetch(doi) {
-    if (!doi) return null;
-    try {
-        const resp = await fetch(`${S2_BASE}/paper/${doi}?fields=title,authors,citationCount,influentialCitationCount,tldr,year,venue,externalIds`);
-        if (resp.ok) return resp.json();
-    } catch (e) {}
-    return null;
-}
-
-// ========================================================
-// Sort mode state
-// ========================================================
-let sortMode = "citations"; // "citations" | "altmetric" | "influential"
-let filterMode = "all";     // "all" | "books" | "recent"
-
-// ========================================================
-// OpenAlex API client
-// ========================================================
-const OPENALEX_BASE = "https://api.openalex.org";
-
-async function openAlexSearch(query, filters = {}, page = 1, perPage = 20) {
-    const params = new URLSearchParams();
-    params.set("search", query);
-    params.set("per_page", perPage);
-    params.set("page", page);
-    for (const [k, v] of Object.entries(filters)) {
-        params.set(k, v);
-    }
-    const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
-    if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
-    return resp.json();
-}
-
-/**
- * Look up an OpenAlex concept by name.
- * Returns { conceptId, displayName, worksCount } or null if no good match.
- */
-async function lookupConcept(query) {
-    try {
-        const resp = await fetch(
-            `${OPENALEX_BASE}/concepts?search=${encodeURIComponent(query)}&per_page=3`
-        );
-        if (!resp.ok) return null;
-        const data = await resp.json();
-        const results = data.results || [];
-        for (const c of results) {
-            // Check relevance: score > 0.5 or the name matches closely
-            const score = c.relevance_score || 0;
-            const nameLower = (c.display_name || "").toLowerCase();
-            const queryLower = query.toLowerCase();
-            // Accept if high relevance score or exact/close name match
-            if (score > 0.5 || nameLower === queryLower || nameLower.includes(queryLower)) {
-                return {
-                    conceptId: c.id.replace(/^.*\//, ""),     // "https://openalex.org/C185701065" -> "C185701065"
-                    displayName: c.display_name,
-                    worksCount: c.works_count || 0
-                };
-            }
-        }
-    } catch (e) {
-        // silent - caller will fall back
-    }
-    return null;
-}
-
-/**
- * Search works using a concept ID filter (not free-text search).
- * @param {string|null} conceptId - The numeric concept ID, or null to skip concept filter
- * @param {string} fallbackQuery - If conceptId is null, use this as a title.search filter
- * @param {object} extraFilters - OpenAlex filter key-value pairs
- * @param {number} page - Page number
- * @param {number} perPage - Results per page
- */
-async function openAlexSearchConcept(conceptId, fallbackQuery, extraFilters = {}, page = 1, perPage = 15) {
-    const params = new URLSearchParams();
-    params.set("per_page", perPage);
-    params.set("page", page);
-    params.set("sort", "cited_by_count:desc");
-
-    if (conceptId) {
-        // Build filter string: concepts.id:XXX plus any extra filters
-        const filterParts = [`concepts.id:${conceptId}`];
-        for (const [k, v] of Object.entries(extraFilters)) {
-            filterParts.push(`${k}:${v}`);
-        }
-        params.set("filter", filterParts.join(","));
-    } else if (fallbackQuery) {
-        // Fall back to exact title search instead of free-text search
-        const filterParts = [`title.search:"${fallbackQuery}"`];
-        for (const [k, v] of Object.entries(extraFilters)) {
-            filterParts.push(`${k}:${v}`);
-        }
-        params.set("filter", filterParts.join(","));
-    } else {
-        // Last resort: no filters, just sort by citations
-        for (const [k, v] of Object.entries(extraFilters)) {
-            params.set(k, v);
-        }
-    }
-
-    const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
-    if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
-    return resp.json();
-}
-
-async function openAlexSearchAuthors(conceptName, perPage = 10) {
-    const resp = await fetch(`${OPENALEX_BASE}/authors?search=${encodeURIComponent(conceptName)}&per_page=${perPage}&sort=cited_by_count:desc`);
-    if (!resp.ok) return { results: [] };
-    return resp.json();
-}
-
-async function openAlexSearchSources(conceptName, perPage = 10) {
-    const resp = await fetch(`${OPENALEX_BASE}/sources?search=${encodeURIComponent(conceptName)}&per_page=${perPage}&sort=cited_by_count:desc`);
-    if (!resp.ok) return { results: [] };
-    return resp.json();
-}
-
-// ========================================================
-// Cache version — bump this to invalidate old cached data
-// after API changes. Old entries use "bibCache", new use
-// "bibCache_v2".
-// ========================================================
-const CACHE_VERSION = "v2";
-const CACHE_KEY = `bibCache_${CACHE_VERSION}`;
-
-/**
- * Generate a cache key that is versioned so stale data is ignored
- * after the search logic changes from free-text to concept-filtered.
- */
-function getCacheKey(conceptName) {
-    return `${CACHE_VERSION}:${conceptName.toLowerCase()}`;
-}
-
-async function generateBibliography(subfieldPath) {
-    const conceptName = subfieldPath.join(" ");
-    const cacheKey = getCacheKey(conceptName);
-    const cache = bibCache[cacheKey];
-    if (cache) return cache;
-
-    // Step 1: Look up the concept in OpenAlex
-    const conceptLookup = await lookupConcept(conceptName);
-    const conceptId = conceptLookup ? conceptLookup.conceptId : null;
-
-    // Step 2: Build category-specific queries using concept filter
-    const queries = [
-        {
-            label: "Textbooks & Monographs",
-            filters: { type: "book" },
-            perPage: 15
-        },
-        {
-            label: "Foundational Papers",
-            filters: { from_publication_date: "1900-01-01", to_publication_date: "2021-12-31", cited_by_count_min: "30" },
-            perPage: 15
-        },
-        {
-            label: "Recent Advances",
-            filters: { from_publication_date: "2022-01-01" },
-            perPage: 15
-        },
-        {
-            label: "Survey & Review Articles",
-            extraSearch: "survey review",
-            filters: {},
-            perPage: 10
-        },
-    ];
-
-    const results = {};
-    const allDois = [];
-
-    for (const q of queries) {
-        try {
-            // For survey/review, we add search on top of concept filter
-            let data;
-            if (q.extraSearch && !conceptId) {
-                // No concept match: use title search with survey keywords
-                data = await openAlexSearchConcept(null, `${conceptName} ${q.extraSearch}`, q.filters, 1, q.perPage);
-            } else if (q.extraSearch && conceptId) {
-                // Concept matched + survey keywords: use concept filter + search
-                const params = new URLSearchParams();
-                params.set("filter", `concepts.id:${conceptId}`);
-                params.set("search", q.extraSearch);
-                params.set("sort", "cited_by_count:desc");
-                params.set("per_page", q.perPage);
-                params.set("page", "1");
-                for (const [k, v] of Object.entries(q.filters)) {
-                    params.set(k, v);
-                }
-                const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
-                if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
-                data = await resp.json();
-            } else {
-                // Textbooks, Foundational, Recent: pure concept filter (or title-search fallback)
-                data = await openAlexSearchConcept(conceptId, conceptName, q.filters, 1, q.perPage);
-            }
-
-            results[q.label] = {
-                count: data.meta?.count || 0,
-                items: (data.results || []).map(r => {
-                    const item = {
-                        title: r.title || "Untitled",
-                        authors: (r.authorships || []).map(a => a.author?.display_name).filter(Boolean),
-                        venue: r.primary_location?.source?.display_name || r.host_venue?.display_name || "",
-                        year: r.publication_year || "n.d.",
-                        citations: r.cited_by_count || 0,
-                        doi: r.doi || "",
-                        url: r.primary_location?.landing_page_url || r.doi || "",
-                        type: r.type || "article",
-                        influentialCitations: r.institutions?.length || 0,
-                        altmetric: null,
-                        s2CitationCount: null,
-                        s2InfluentialCitationCount: null,
-                        tldr: null
-                    };
-                    if (r.doi) allDois.push(r.doi);
-                    return item;
-                })
-            };
-        } catch (e) {
-            results[q.label] = { count: 0, items: [] };
-        }
-        await sleep(200);
-    }
-
-    // Fetch altmetric data from Semantic Scholar (batch by DOI)
-    for (const doi of allDois) {
-        try {
-            const s2 = await semanticScholarFetch(doi);
-            if (s2) {
-                // Attach altmetric to all items with this DOI
-                for (const label of Object.keys(results)) {
-                    if (typeof results[label] === "string") continue;
-                    for (const item of (results[label].items || [])) {
-                        if (item.doi === doi) {
-                            item.s2CitationCount = s2.citationCount || item.citations;
-                            item.s2InfluentialCitationCount = s2.influentialCitationCount || 0;
-                            item.tldr = s2.tldr?.text || null;
-                            // Compute a composite altmetric proxy
-                            item.altmetric = Math.round(
-                                (Math.max(0, s2.citationCount || 0) * 1) +
-                                (Math.max(0, s2.influentialCitationCount || 0) * 5)
-                            );
-                        }
-                    }
-                }
-            }
-        } catch (e) {}
-        await sleep(100);
-    }
-
-    // Fetch authors
-    results["authors"] = { count: 0, items: [] };
-    try {
-        const authors = await openAlexSearchAuthors(conceptName, 8);
-        results["authors"] = {
-            count: authors.meta?.count || 0,
-            items: (authors.results || []).map(a => ({
-                name: a.display_name,
-                affiliation: (a.last_known_institution || a.affiliations?.[0]?.institution?.display_name) || "",
-                citations: a.cited_by_count || 0,
-                works: a.works_count || 0,
-                url: `https://openalex.org/${a.id?.split("/").pop()}`
-            }))
-        };
-    } catch (e) {}
-    await sleep(200);
-
-    // Fetch sources
-    results["venues"] = { count: 0, items: [] };
-    try {
-        const sources = await openAlexSearchSources(conceptName, 8);
-        results["venues"] = {
-            count: sources.meta?.count || 0,
-            items: (sources.results || []).map(s => ({
-                name: s.display_name,
-                type: s.type || "journal",
-                works: s.works_count || 0,
-                citations: s.cited_by_count || 0,
-                url: `https://openalex.org/${s.id?.split("/").pop()}`,
-                issn: (s.issn || []).join(", ")
-            }))
-        };
-    } catch (e) {}
-    await sleep(200);
-
-    results.generatedAt = new Date().toISOString();
-    bibCache[cacheKey] = results;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(bibCache));
-
-    return results;
-}
-
-function sleep(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-
-// ========================================================
-// UI State
+// State
 // ========================================================
 let selectedPath = [];
 let currentBibResult = null;
 let bibCache = {};
 
 try {
-    bibCache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
-    // Remove old v1 cache to prevent confusion
-    localStorage.removeItem("bibCache");
-} catch(e) {
+    bibCache = JSON.parse(localStorage.getItem("bibCache_llm_v1") || "{}");
+} catch(e) { bibCache = {}; }
+
+// ========================================================
+// API Key management
+// ========================================================
+function getApiKey() {
+    return localStorage.getItem("openrouter_api_key") || "";
+}
+
+function setApiStatus() {
+    const btn = document.getElementById("apiStatusBtn");
+    const key = getApiKey();
+    if (key) {
+        btn.textContent = "API Key Set";
+        btn.className = "icon-btn api-btn has-key";
+    } else {
+        btn.textContent = "Set API Key";
+        btn.className = "icon-btn api-btn no-key";
+    }
+}
+
+function openApiSettings() {
+    document.getElementById("apiKeyInput").value = getApiKey();
+    document.getElementById("apiModal").classList.add("open");
+}
+
+function closeApiSettings() {
+    document.getElementById("apiModal").classList.remove("open");
+}
+
+function saveApiKey() {
+    const key = document.getElementById("apiKeyInput").value.trim();
+    if (!key) return alert("Please enter an API key");
+    localStorage.setItem("openrouter_api_key", key);
+    closeApiSettings();
+    setApiStatus();
     bibCache = {};
+    localStorage.removeItem("bibCache_llm_v1");
+    showToast("Key saved. Cache cleared. Re-select a subfield.");
+}
+
+// ========================================================
+// LLM-powered bibliography generator
+// ========================================================
+async function generateBibliographyLLM(subfieldPath) {
+    const apiKey = getApiKey();
+    if (!apiKey) return null;
+
+    const conceptName = subfieldPath.join(" ");
+    const cacheKey = conceptName.toLowerCase();
+    if (bibCache[cacheKey]) return bibCache[cacheKey];
+
+    const systemPrompt = `You are a distinguished professor of formal sciences creating a comprehensive, curated bibliography for a specific subfield.
+
+Your response MUST be valid JSON with this exact structure:
+{
+  "explanation": "A clear, beginner-friendly explanation of this subfield (3-4 paragraphs). Cover: what it studies, why it matters, main questions it tries to answer, and connections to other fields. Write for someone with basic math/CS background.",
+  "seminal_textbooks": [
+    {
+      "title": "...",
+      "author": "...",
+      "year": "...",
+      "publisher_or_note": "...",
+      "level": "beginner|intermediate|advanced"
+    }
+  ],
+  "foundational_papers": [
+    {
+      "title": "...",
+      "authors": "...",
+      "year": "...",
+      "venue": "...",
+      "significance": "Brief (1 sentence) why this paper is foundational"
+    }
+  ],
+  "modern_references": [
+    {
+      "title": "...",
+      "authors": "...",
+      "year": "...",
+      "note": "What this work contributes"
+    }
+  ],
+  "key_concepts": ["concept1", "concept2", ...],
+  "related_fields": ["field1", "field2", ...]
+}
+
+Requirements:
+- Each section should have 8-12 high-quality entries (not 50 mediocre ones)
+- Include the MOST important/seminal works in the field
+- Order items by importance within each section (most important first)
+- Be precise with author names, years, and titles
+- Do NOT fabricate works — only include real, well-known works
+- The explanation should be genuinely educational and accessible`;
+
+    const userPrompt = `Generate a complete beginner's guide and seminal bibliography for: "${conceptName}" in the formal sciences.
+
+Provide exactly 10 seminal textbooks, 10 foundational papers, 8 modern references, and 8-10 key concepts.`;
+
+    try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`,
+                "HTTP-Referer": window.location.href,
+                "X-Title": "Formal Sciences Bibliographer"
+            },
+            body: JSON.stringify({
+                model: "google/gemini-2.0-flash-001",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                response_format: { type: "json_object" }
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`API error ${response.status}: ${errText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (!content) throw new Error("No response content from LLM");
+
+        // Parse JSON — handle potential markdown code fences
+        let cleaned = content.trim();
+        if (cleaned.startsWith("```json")) {
+            cleaned = cleaned.slice(7);
+        }
+        if (cleaned.startsWith("```")) {
+            cleaned = cleaned.slice(3);
+        }
+        if (cleaned.endsWith("```")) {
+            cleaned = cleaned.slice(0, -3);
+        }
+        cleaned = cleaned.trim();
+
+        const result = JSON.parse(cleaned);
+        result.generatedAt = new Date().toISOString();
+
+        bibCache[cacheKey] = result;
+        localStorage.setItem("bibCache_llm_v1", JSON.stringify(bibCache));
+
+        return result;
+    } catch (e) {
+        console.error("LLM bibliography failed:", e);
+        throw e;
+    }
+}
+
+// ========================================================
+// UI Functions
+// ========================================================
+async function loadBibliography(path) {
+    const content = document.getElementById("content");
+    const displayName = path.slice(1).join(" > ") || "Formal Sciences";
+    const conceptName = path.slice(1).join(" ");
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="emoji">&#x1F511;</div>
+                <h2>API Key Required</h2>
+                <p>Set your OpenRouter API key in the top-right to generate LLM-powered explanations and bibliographies. Gemini 2.0 Flash is used (~free tier eligible).</p>
+                <div style="margin-top:1rem;">
+                    <button class="bib-action-btn primary" onclick="openApiSettings()">Set API Key</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="bib-header">
+            <div class="bib-breadcrumb">${displayName}</div>
+            <div class="bib-title">${conceptName}</div>
+            <div class="bib-subtitle">Generating explanation & bibliography...</div>
+        </div>
+        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+        <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;">LLM is generating a curated bibliography. This may take 10-30 seconds...</p>
+    `;
+
+    try {
+        const result = await generateBibliographyLLM(path.slice(1));
+        if (!result) return;
+        currentBibResult = result;
+        displayBibliography(result, displayName, conceptName);
+    } catch (e) {
+        content.innerHTML = `
+            <div class="bib-header">
+                <div class="bib-breadcrumb">${displayName}</div>
+                <div class="bib-title">Generation Error</div>
+                <div class="bib-subtitle">${e.message}</div>
+            </div>
+            <div class="bib-actions">
+                <button class="bib-action-btn primary" onclick="loadBibliography(${JSON.stringify(path)})">Retry</button>
+                <button class="bib-action-btn" onclick="openApiSettings()">Check API Key</button>
+            </div>
+        `;
+    }
+}
+
+function displayBibliography(result, displayName, conceptName) {
+    const content = document.getElementById("content");
+    let html = `
+        <div class="bib-header">
+            <div class="bib-breadcrumb">${displayName}</div>
+            <div class="bib-title">${conceptName}</div>
+            <div class="bib-subtitle">AI-Generated Bibliography</div>
+        </div>
+        <div class="bib-actions">
+            <button class="bib-action-btn primary" onclick="exportBib()">Export</button>
+            <button class="bib-action-btn" onclick="window.print()">Print</button>
+        </div>
+    `;
+
+    // Explanation
+    if (result.explanation) {
+        const explanationLines = result.explanation.split("\n").filter(Boolean);
+        html += `<div class="explanation-box">`;
+        html += `<h3>&#x1F4D6; Introduction for Beginners</h3>`;
+        for (const line of explanationLines) {
+            html += `<p>${escapeHtml(line)}</p>`;
+        }
+        html += `</div>`;
+    }
+
+    // Key Concepts
+    if (result.key_concepts && result.key_concepts.length > 0) {
+        html += `<div class="bib-section">`;
+        html += `<div class="bib-section-header">`;
+        html += `<span class="bib-section-icon">&#x1F9E9;</span>`;
+        html += `<span class="bib-section-title">Key Concepts</span>`;
+        html += `<span class="bib-section-desc">${result.key_concepts.length} concepts</span>`;
+        html += `</div>`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+        for (const c of result.key_concepts) {
+            html += `<span class="bib-tag" style="padding:4px 10px;font-size:0.8rem;">${escapeHtml(c)}</span>`;
+        }
+        html += `</div></div>`;
+    }
+
+    // Seminal Textbooks
+    if (result.seminal_textbooks && result.seminal_textbooks.length > 0) {
+        html += `<div class="bib-section">`;
+        html += `<div class="bib-section-header">`;
+        html += `<span class="bib-section-icon">&#x1F4D7;</span>`;
+        html += `<span class="bib-section-title">Seminal Textbooks</span>`;
+        html += `<span class="bib-section-desc">${result.seminal_textbooks.length} books</span>`;
+        html += `</div>`;
+        result.seminal_textbooks.forEach((book, i) => {
+            const levelColor = book.level === "beginner" ? "var(--green)" : book.level === "intermediate" ? "#f59e0b" : "#ef4444";
+            html += `<div class="bib-entry">
+                <span class="bib-entry-number">${i + 1}</span>
+                <span class="bib-entry-title">${escapeHtml(book.title)}</span>
+                <span class="bib-tag" style="margin-left:6px;color:${levelColor};border-color:${levelColor};">${book.level || ""}</span>
+                <div class="bib-entry-authors">${escapeHtml(book.author || "")}</div>
+                <div class="bib-entry-venue">${escapeHtml(book.publisher_or_note || "")}${book.year ? ' (' + escapeHtml(book.year) + ')' : ''}</div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // Foundational Papers
+    if (result.foundational_papers && result.foundational_papers.length > 0) {
+        html += `<div class="bib-section">`;
+        html += `<div class="bib-section-header">`;
+        html += `<span class="bib-section-icon">&#x1F4C4;</span>`;
+        html += `<span class="bib-section-title">Foundational Papers</span>`;
+        html += `<span class="bib-section-desc">${result.foundational_papers.length} papers</span>`;
+        html += `</div>`;
+        result.foundational_papers.forEach((paper, i) => {
+            html += `<div class="bib-entry">
+                <span class="bib-entry-number">${i + 1}</span>
+                <span class="bib-entry-title">${escapeHtml(paper.title)}</span>
+                <div class="bib-entry-authors">${escapeHtml(paper.authors || "")}</div>
+                <div class="bib-entry-venue">${escapeHtml(paper.venue || "")}${paper.year ? ' (' + escapeHtml(paper.year) + ')' : ''}</div>
+                ${paper.significance ? `<div class="bib-entry-note">${escapeHtml(paper.significance)}</div>` : ''}
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // Modern References
+    if (result.modern_references && result.modern_references.length > 0) {
+        html += `<div class="bib-section">`;
+        html += `<div class="bib-section-header">`;
+        html += `<span class="bib-section-icon">&#x1F50D;</span>`;
+        html += `<span class="bib-section-title">Modern References</span>`;
+        html += `<span class="bib-section-desc">${result.modern_references.length} works</span>`;
+        html += `</div>`;
+        result.modern_references.forEach((ref, i) => {
+            html += `<div class="bib-entry">
+                <span class="bib-entry-number">${i + 1}</span>
+                <span class="bib-entry-title">${escapeHtml(ref.title)}</span>
+                <div class="bib-entry-authors">${escapeHtml(ref.authors || "")}</div>
+                <div class="bib-entry-venue">${ref.year ? escapeHtml(ref.year) : ''}</div>
+                ${ref.note ? `<div class="bib-entry-note">${escapeHtml(ref.note)}</div>` : ''}
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // Related Fields
+    if (result.related_fields && result.related_fields.length > 0) {
+        html += `<div class="bib-section">`;
+        html += `<div class="bib-section-header">`;
+        html += `<span class="bib-section-icon">&#x1F517;</span>`;
+        html += `<span class="bib-section-title">Related Fields</span>`;
+        html += `</div>`;
+        html += `<div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+        for (const f of result.related_fields) {
+            html += `<span class="bib-tag" style="padding:4px 10px;font-size:0.8rem;background:var(--bg);">${escapeHtml(f)}</span>`;
+        }
+        html += `</div></div>`;
+    }
+
+    html += `<div style="font-size:0.7rem;color:var(--text-light);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">Generated by LLM · ${new Date(result.generatedAt).toLocaleString()} · Verify references before academic use</div>`;
+
+    content.innerHTML = html;
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ========================================================
+// Export
+// ========================================================
+let exportFormat = "";
+function exportBib() {
+    if (!currentBibResult) return;
+    const json = JSON.stringify(currentBibResult, null, 2);
+    document.getElementById("exportTitle").textContent = "Export Bibliography";
+    document.getElementById("exportPreview").textContent = json;
+    document.getElementById("exportModal").classList.add("open");
+    exportFormat = "json";
+}
+
+function copyExport() {
+    const text = document.getElementById("exportPreview").textContent;
+    navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard"));
+}
+
+function downloadExport() {
+    const text = document.getElementById("exportPreview").textContent;
+    const subfield = selectedPath.slice(1).join("-").toLowerCase().replace(/\s+/g, "-");
+    const ext = exportFormat === "json" ? "json" : "txt";
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bibliography-${subfield}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    closeExport();
+    showToast("Downloaded");
+}
+
+function closeExport() {
+    document.getElementById("exportModal").classList.remove("open");
+}
+
+// ========================================================
+// Toast
+// ========================================================
+function showToast(msg) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+// ========================================================
+// Dark mode
+// ========================================================
+function toggleDark() {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", isDark ? "" : "dark");
+    document.getElementById("themeBtn").textContent = isDark ? "Dark" : "Light";
+    localStorage.setItem("theme", isDark ? "light" : "dark");
+}
+
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.getElementById("themeBtn").textContent = "Light";
 }
 
 // ========================================================
@@ -1326,14 +1061,11 @@ function setupTreeClickHandlers() {
     document.querySelectorAll(".tree-row").forEach(row => {
         row.addEventListener("click", (e) => {
             e.stopPropagation();
-            const row = e.currentTarget;
             const children = row.nextElementSibling;
             const toggle = row.querySelector(".tree-toggle");
             if (children && children.classList.contains("tree-children")) {
                 children.classList.toggle("collapsed");
-                if (toggle) {
-                    toggle.textContent = children.classList.contains("collapsed") ? "▶" : "▼";
-                }
+                if (toggle) toggle.textContent = children.classList.contains("collapsed") ? "▶" : "▼";
             }
             selectSubfield(JSON.parse(decodeURIComponent(row.dataset.path)));
         });
@@ -1353,350 +1085,19 @@ function selectSubfield(path) {
     const activeRow = document.querySelector(`[data-path="${pathStr}"]`);
     if (activeRow) {
         activeRow.classList.add("active");
-        // Expand parents
         let parent = activeRow.parentElement;
         while (parent && parent.classList.contains("tree-children")) {
             parent.classList.remove("collapsed");
-            parent = parent.parentElement?.nextElementSibling === parent ? null : parent.parentElement?.parentElement || null;
+            parent = parent.parentElement?.parentElement || null;
         }
-        // Update toggle icons
         document.querySelectorAll(".tree-children:not(.collapsed) .tree-toggle").forEach(t => t.textContent = "▼");
     }
-    // Close sidebar on mobile
     document.getElementById("sidebar").classList.remove("open");
     loadBibliography(path);
 }
 
 // ========================================================
-// Bibliography Display
-// ========================================================
-async function loadBibliography(path) {
-    const content = document.getElementById("content");
-    const displayName = path.slice(1).join(" > ") || "Formal Sciences";
-
-    content.innerHTML = `
-        <div class="bib-header">
-            <div class="bib-breadcrumb">${displayName}</div>
-            <div class="bib-title">Generating bibliography...</div>
-        </div>
-        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
-    `;
-
-    const conceptName = path.slice(1).join(" ");
-
-    try {
-        const results = await generateBibliography(path.slice(1));
-        currentBibResult = results;
-        displayBibliography(results, displayName, conceptName);
-    } catch (e) {
-        content.innerHTML = `
-            <div class="bib-header">
-                <div class="bib-breadcrumb">${displayName}</div>
-                <div class="bib-title">Error loading bibliography</div>
-                <div class="bib-subtitle">${e.message}</div>
-            </div>
-            <div class="bib-actions">
-                <button class="bib-action-btn primary" onclick="loadBibliography(${JSON.stringify(path)})">Retry</button>
-            </div>
-        `;
-    }
-}
-
-function displayBibliography(results, displayName, conceptName) {
-    const content = document.getElementById("content");
-
-    // Collect all items
-    const labels = ["Textbooks & Monographs", "Foundational Papers", "Recent Advances", "Survey & Review Articles"];
-    let allItems = [];
-    for (const label of labels) {
-        const r = results[label];
-        if (r && r.items) {
-            for (const item of r.items) {
-                item._category = label;
-                allItems.push(item);
-            }
-        }
-    }
-
-    // Apply filter
-    if (filterMode === "books") {
-        allItems = allItems.filter(i => i.type === "book" || i.type === "monograph");
-    } else if (filterMode === "recent") {
-        const yr = new Date().getFullYear() - 3;
-        allItems = allItems.filter(i => parseInt(i.year) >= yr);
-    }
-
-    // Apply sort
-    if (sortMode === "citations") {
-        allItems.sort((a, b) => (b.citations || 0) - (a.citations || 0));
-    } else if (sortMode === "altmetric") {
-        allItems.sort((a, b) => {
-            const sa = (b.altmetric || 0) + (b.s2CitationCount || 0) * 0.5 + (b.s2InfluentialCitationCount || 0) * 5;
-            const sb = (a.altmetric || 0) + (a.s2CitationCount || 0) * 0.5 + (a.s2InfluentialCitationCount || 0) * 5;
-            return sb - sa;
-        });
-    } else if (sortMode === "influential") {
-        allItems.sort((a, b) => (b.s2InfluentialCitationCount || 0) - (a.s2InfluentialCitationCount || 0));
-    }
-
-    // Group back by category
-    const grouped = {};
-    for (const item of allItems) {
-        if (!grouped[item._category]) grouped[item._category] = [];
-        grouped[item._category].push(item);
-    }
-
-    const totalCitations = allItems.reduce((s, i) => s + (i.citations || 0), 0);
-    const totalAlt = allItems.filter(i => i.altmetric).length;
-
-    let html = `
-        <div class="bib-header">
-            <div class="bib-breadcrumb">${displayName}</div>
-            <div class="bib-title">${conceptName}</div>
-            <div class="bib-subtitle">Comprehensive Bibliography</div>
-            <div class="bib-stats">
-    `;
-
-    for (const label of labels) {
-        const r = results[label];
-        if (r && r.count) {
-            html += `<div class="bib-stat"><span class="bib-stat-num">${r.count.toLocaleString()}</span> ${label}</div>`;
-        }
-    }
-    html += `<div class="bib-stat"><span class="bib-stat-num">${allItems.length}</span> Results</div>`;
-    html += `<div class="bib-stat"><span class="bib-stat-num">${totalCitations.toLocaleString()}</span> Total citations</div>`;
-    html += `</div>`;
-
-    // Sort & filter bar
-    html += `<div class="sort-bar">
-        <span class="sort-label">Sort:</span>
-        <span class="sort-chip ${sortMode === 'citations' ? 'active' : ''}" onclick="setSort('citations')">By Citations</span>
-        <span class="sort-chip ${sortMode === 'altmetric' ? 'active' : ''}" onclick="setSort('altmetric')">By Altmetric</span>
-        <span class="sort-chip ${sortMode === 'influential' ? 'active' : ''}" onclick="setSort('influential')">Influential Citations</span>
-        <div class="sort-divider"></div>
-        <span class="sort-label">Filter:</span>
-        <span class="sort-chip ${filterMode === 'all' ? 'active' : ''}" onclick="setFilter('all')">All</span>
-        <span class="sort-chip ${filterMode === 'books' ? 'active' : ''}" onclick="setFilter('books')">Books Only</span>
-        <span class="sort-chip ${filterMode === 'recent' ? 'active' : ''}" onclick="setFilter('recent')">Recent (3yr)</span>
-    </div>`;
-
-    // Action buttons
-    html += `<div class="bib-actions">
-        <button class="bib-action-btn" onclick="exportAs('bibtex')">Export BibTeX</button>
-        <button class="bib-action-btn" onclick="exportAs('json')">Export JSON</button>
-        <button class="bib-action-btn" onclick="exportAs('csv')">Export CSV</button>
-        <button class="bib-action-btn" onclick="window.print()">Print</button>
-    </div></div>`;
-
-    // Paper sections
-    for (const label of labels) {
-        const items = grouped[label];
-        if (!items || items.length === 0) continue;
-        const r = results[label];
-        html += `<div class="bib-section"><div class="bib-section-header">`;
-        html += `<span class="bib-section-title">${label}</span>`;
-        html += `<span class="bib-section-count">${items.length} items · ${r?.count?.toLocaleString() || 0} available</span>`;
-        html += `</div>`;
-        for (const item of items) {
-            html += renderBibEntry(item);
-        }
-        html += `</div>`;
-    }
-
-    // Authors section
-    if (results.authors?.items?.length > 0) {
-        html += `<div class="bib-section"><div class="bib-section-header">`;
-        html += `<span class="bib-section-title">Key Authors</span>`;
-        html += `<span class="bib-section-count">${results.authors.items.length} researchers</span>`;
-        html += `</div>`;
-        for (const a of results.authors.items) {
-            html += `<div class="bib-entry">
-                <div class="bib-entry-title">${a.name}</div>
-                <div class="bib-entry-authors">${a.affiliation || "Independent researcher"}</div>
-                <div class="bib-entry-meta">
-                    <span>Cited: ${a.citations.toLocaleString()}</span>
-                    <span>Works: ${a.works}</span>
-                </div>
-                <a class="bib-entry-link" href="${a.url}" target="_blank">OpenAlex Profile →</a>
-            </div>`;
-        }
-        html += `</div>`;
-    }
-
-    // Venues section
-    if (results.venues?.items?.length > 0) {
-        html += `<div class="bib-section"><div class="bib-section-header">`;
-        html += `<span class="bib-section-title">Key Journals & Venues</span>`;
-        html += `<span class="bib-section-count">${results.venues.items.length} venues</span>`;
-        html += `</div>`;
-        for (const v of results.venues.items) {
-            const typeIcon = v.type === "journal" ? "📰" : v.type === "conference" ? "🏛️" : "📄";
-            html += `<div class="bib-entry">
-                <div class="bib-entry-title">${typeIcon} ${v.name}</div>
-                <div class="bib-entry-venue">${v.issn || v.type}</div>
-                <div class="bib-entry-meta">
-                    <span>Works: ${v.works.toLocaleString()}</span>
-                    <span>Cited: ${v.citations.toLocaleString()}</span>
-                </div>
-                <a class="bib-entry-link" href="${v.url}" target="_blank">OpenAlex →</a>
-            </div>`;
-        }
-        html += `</div>`;
-    }
-
-    html += `<div style="font-size:0.7rem;color:var(--text-light);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">Generated: ${new Date(results.generatedAt).toLocaleString()} · Data: OpenAlex API · <a href="https://openalex.org" target="_blank" class="bib-entry-link" style="display:inline;">OpenAlex.org</a></div>`;
-
-    content.innerHTML = html;
-}
-
-function renderBibEntry(item) {
-    const authorStr = item.authors.length > 0
-        ? (item.authors.length > 3 ? item.authors.slice(0, 3).join(", ") + " et al." : item.authors.join(", "))
-        : "Unknown";
-
-    let html = `<div class="bib-entry">`;
-    html += `<div class="bib-entry-title">${item.title}</div>`;
-    html += `<div class="bib-entry-authors">${authorStr}</div>`;
-    if (item.venue) html += `<div class="bib-entry-venue">${item.venue}${item.year ? ' (' + item.year + ')' : ''}</div>`;
-
-    const typeIcon = item.type === "book" ? "📘" : item.type === "article" ? "📄" : "📃";
-    const tags = [];
-    if (item.type) tags.push(item.type);
-    html = `<span class="bib-tag">${typeIcon} ${tags.join(", ")}</span>` + html;
-
-    html += `<div class="bib-entry-meta">`;
-    if (item.citations > 0) html += `<span>Citations: ${item.citations.toLocaleString()}</span>`;
-    if (item.s2InfluentialCitationCount > 0) html += `<span>Influential: ${item.s2InfluentialCitationCount}</span>`;
-    if (item.tldr) html += `<span style="cursor:help" title="${item.tldr.replace(/"/g, '')}">TL;DR</span>`;
-    if (item.altmetric > 0) html += `<span class="altmetric-score" title="Altmetric composite score">Altmetric: ${item.altmetric}</span>`;
-    html += `</div>`;
-    if (item.url) html += `<a class="bib-entry-link" href="${item.url}" target="_blank">View paper →</a>`;
-    if (item.doi) html += `<a class="bib-entry-link" href="https://doi.org/${item.doi}" target="_blank">DOI →</a>`;
-    html += `</div>`;
-    return html;
-}
-
-// ========================================================
-// Sort & Filter
-// ========================================================
-function setSort(mode) {
-    sortMode = mode;
-    displayBibliography(currentBibResult, selectedPath.slice(1).join(" > "), selectedPath.slice(1).join(" "));
-}
-
-function setFilter(mode) {
-    filterMode = mode;
-    displayBibliography(currentBibResult, selectedPath.slice(1).join(" > "), selectedPath.slice(1).join(" "));
-}
-
-// ========================================================
-// Export
-// ========================================================
-function exportAs(format) {
-    if (!currentBibResult) return;
-    const items = [];
-    for (const [label, data] of Object.entries(currentBibResult)) {
-        if (typeof data === "string" || !data.items) continue;
-        for (const item of data.items) {
-            item._category = label;
-            items.push(item);
-        }
-    }
-
-    let output, title, ext;
-    const subfield = selectedPath.slice(1).join("-").toLowerCase().replace(/\s+/g, "-");
-
-    if (format === "json") {
-        output = JSON.stringify({
-            subfield: selectedPath.slice(1).join(" > "),
-            generatedAt: currentBibResult.generatedAt,
-            papers: items.filter(i => i._category !== "authors" && i._category !== "venues"),
-            authors: items.filter(i => i._category === "authors"),
-            venues: items.filter(i => i._category === "venues")
-        }, null, 2);
-        title = "JSON";
-        ext = "json";
-    } else if (format === "bibtex") {
-        output = items.filter(i => i._category !== "authors" && i._category !== "venues").map((item, idx) => {
-            const key = `${item.authors[0]?.split(/\s+/).pop() || "anon"}${item.year}${idx}`.toLowerCase();
-            const type = item.type === "book" ? "book" : "article";
-            let bib = `@${type}{${key},\n`;
-            bib += `  title = {${item.title.replace(/[{}]/g, '')}},\n`;
-            bib += `  author = {${item.authors.join(' and ')}},\n`;
-            bib += `  year = {${item.year}},\n`;
-            if (item.venue) bib += `  journal = {${item.venue}},\n`;
-            if (item.doi) bib += `  doi = {${item.doi}},\n`;
-            if (item.citations) bib += `  note = {Cited by: ${item.citations}},\n`;
-            bib += `}`;
-            return bib;
-        }).join("\n\n");
-        title = "BibTeX";
-        ext = "bib";
-    } else if (format === "csv") {
-        const header = "title,authors,year,venue,citations,doi,type,category,url\n";
-        const rows = items.filter(i => i._category !== "authors" && i._category !== "venues").map(item =>
-            `"${(item.title||'').replace(/"/g,'""')}","${item.authors.join('; ')}","${item.year}","${(item.venue||'').replace(/"/g,'""')}","${item.citations}","${item.doi||''}","${item.type||''}","${item._category}","${item.url||''}"`
-        ).join("\n");
-        output = header + rows;
-        title = "CSV";
-        ext = "csv";
-    }
-
-    document.getElementById("exportTitle").textContent = `Export as ${title}`;
-    document.getElementById("exportCode").textContent = output;
-    document.getElementById("downloadBtn").onclick = () => {
-        const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `bibliography-${subfield}.${ext}`;
-        a.click();
-        URL.revokeObjectURL(url);
-        closeExport();
-    };
-    document.getElementById("exportModal").classList.add("open");
-}
-
-function copyExport() {
-    const text = document.getElementById("exportCode").textContent;
-    navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard"));
-}
-
-function downloadExport() {
-    document.getElementById("downloadBtn").click();
-}
-
-function closeExport() {
-    document.getElementById("exportModal").classList.remove("open");
-}
-
-function showToast(msg) {
-    const toast = document.createElement("div");
-    toast.className = "toast";
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
-}
-
-// ========================================================
-// Dark mode
-// ========================================================
-function toggleDark() {
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    document.documentElement.setAttribute("data-theme", isDark ? "" : "dark");
-    document.getElementById("themeBtn").textContent = isDark ? "Dark" : "Light";
-    localStorage.setItem("theme", isDark ? "light" : "dark");
-}
-
-// Load saved theme
-const savedTheme = localStorage.getItem("theme");
-if (savedTheme === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    document.getElementById("themeBtn").textContent = "Light";
-}
-
-// ========================================================
-// Search in sidebar
+// Sidebar search
 // ========================================================
 document.getElementById("sideSearch").addEventListener("input", function(e) {
     const term = e.target.value.toLowerCase().trim();
@@ -1734,6 +1135,7 @@ function toggleSidebar() {
 // ========================================================
 // Init
 // ========================================================
+setApiStatus();
 renderTree();
 </script>
 
