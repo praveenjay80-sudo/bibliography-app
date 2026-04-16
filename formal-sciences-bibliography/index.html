@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formal Sciences Bibliographer</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --text: #1e293b;
+            --text-dim: #64748b;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --accent-pale: rgba(139, 92, 246, 0.06);
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06);
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f1117;
+            --bg-card: #1a1d28;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --text-light: #64748b;
+            --border: #2d3348;
+            --accent-pale: rgba(139, 92, 246, 0.1);
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .accent-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+
+        .icon-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+            background: var(--accent-pale);
+        }
+
+        .main-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            background: var(--bg-card);
+            overflow-y: auto;
+            position: sticky;
+            top: 56px;
+            height: calc(100vh - 56px);
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 2;
+        }
+
+        .sidebar-search {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .sidebar-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .tree-container {
+            padding: 0.5rem;
+        }
+
+        /* --- Tree --- */
+        .tree-item {
+            user-select: none;
+        }
+
+        .tree-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: background 0.1s;
+        }
+
+        .tree-row:hover {
+            background: var(--accent-pale);
+        }
+
+        .tree-row.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tree-toggle {
+            width: 16px;
+            height: 16px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.15s;
+            color: var(--text-light);
+        }
+
+        .tree-label {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tree-count {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 1px 6px;
+            flex-shrink: 0;
+        }
+
+        .tree-row.active .tree-count {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .tree-children {
+            padding-left: 12px;
+        }
+
+        .tree-children.collapsed {
+            display: none;
+        }
+
+        .tree-leaf {
+            font-size: 0.78rem;
+            padding: 0.25rem 0.5rem;
+            padding-left: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-dim);
+        }
+
+        .tree-leaf:hover {
+            background: var(--accent-pale);
+            color: var(--text);
+        }
+
+        .tree-leaf.active {
+            background: var(--accent-pale);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* --- Content --- */
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h2 {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+            max-width: 400px;
+        }
+
+        /* --- Bibliography Results --- */
+        .bib-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .bib-breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .bib-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .bib-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .bib-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .bib-action-btn {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.78rem;
+            transition: all 0.15s;
+        }
+
+        .bib-action-btn:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .bib-action-btn.primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* --- Loading --- */
+        .loading-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .loading-bar-inner {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: loading-progress 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes loading-progress {
+            0% { width: 0; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* --- Category Section --- */
+        .bib-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .bib-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bib-section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .bib-section-count {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 2px 8px;
+        }
+
+        /* --- Bibliography Entry --- */
+        .bib-entry {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: border-color 0.15s;
+        }
+
+        .bib-entry:hover {
+            border-color: var(--accent);
+        }
+
+        .bib-entry-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .bib-entry-authors {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-bottom: 0.2rem;
+        }
+
+        .bib-entry-venue {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .bib-entry-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.4rem;
+            font-size: 0.72rem;
+            color: var(--text-light);
+        }
+
+        .bib-entry-meta span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .bib-entry-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: 0.3rem;
+        }
+
+        .bib-entry-link:hover {
+            text-decoration: underline;
+        }
+
+        .bib-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--accent-pale);
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        /* --- Stats Bar --- */
+        .bib-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .bib-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            padding: 0.35rem 0.6rem;
+            background: var(--bg);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .bib-stat-num {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        /* --- Toast --- */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            animation: slidein 0.2s ease;
+        }
+
+        @keyframes slidein {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* --- Mobile --- */
+        .mobile-toggle {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 56px);
+                z-index: 200;
+            }
+
+            .sidebar.open {
+                display: block;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+        }
+
+        @media print {
+            header, .sidebar, .bib-actions, .mobile-toggle { display: none !important; }
+            .main-layout { grid-template-columns: 1fr; }
+            .bib-entry { break-inside: avoid; border: 1px solid #ccc; }
+        }
+
+        /* --- Export modal --- */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-box h3 {
+            margin-bottom: 1rem;
+        }
+
+        .export-code {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .export-btn.primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">
+            <div class="accent-dot"></div>
+            Formal Sciences Bibliographer
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="toggleDark()" id="themeBtn">Dark</button>
+            <button class="icon-btn mobile-toggle" onclick="toggleSidebar()">Tree</button>
+        </div>
+    </div>
+</header>
+
+<div class="main-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <input type="text" class="sidebar-search" id="sideSearch" placeholder="Search subfield...">
+        </div>
+        <div class="tree-container" id="treeContainer"></div>
+    </aside>
+
+    <main class="content" id="content">
+        <div class="empty-state">
+            <div class="emoji">&#22117;</div>
+            <h2>Select a subfield</h2>
+            <p>Choose any subfield from the taxonomy tree on the left to generate a comprehensive bibliography.</p>
+        </div>
+    </main>
+</div>
+
+<!-- Export modal -->
+<div class="modal-backdrop" id="exportModal">
+    <div class="modal-box">
+        <h3 id="exportTitle">Export</h3>
+        <pre class="export-code" id="exportCode"></pre>
+        <div class="export-buttons">
+            <button class="export-btn" onclick="copyExport()">Copy</button>
+            <button class="export-btn primary" id="downloadBtn" onclick="downloadExport()">Download</button>
+            <button class="export-btn" onclick="closeExport()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========================================================
+// Formal Sciences Taxonomy (embedded)
+// ========================================================
+const TAXONOMY = {
+    "name": "Formal Sciences",
+    "children": [
+        {
+            "name": "Logic & Foundations",
+            "children": [
+                { "name": "Classical Logic" },
+                { "name": "Non-Classical Logics" },
+                { "name": "Proof Theory" },
+                { "name": "Model Theory" },
+                { "name": "Set Theory" },
+                { "name": "Computability Theory" },
+                { "name": "Type Theory" },
+                { "name": "Category Theory" },
+                { "name": "Modal Logic" },
+                { "name": "Intuitionistic Logic" },
+                { "name": "Temporal Logic" },
+                { "name": "Fuzzy Logic" },
+                { "name": "Linear Logic" },
+                { "name": "Paraconsistent Logic" },
+                { "name": "Paraconsistent Logic" },
+                { "name": "Deontic Logic" },
+                { "name": "Epistemic Logic" },
+                { "name": "Doxastic Logic" },
+                { "name": "Dynamic Logic" },
+                { "name": "Quantum Logic" },
+                { "name": "Many-Valued Logic" },
+                { "name": "Relevance Logic" },
+                { "name": "Substructural Logics" },
+                { "name": "Non-Monotonic Logic" },
+                { "name": "Default Logic" },
+                { "name": "Autoepistemic Logic" },
+                { "name": "Metalogic" },
+                { "name": "Reverse Mathematics" },
+                { "name": "Homotopy Type Theory" },
+                { "name": "Forcing (Set Theory)" },
+                { "name": "Large Cardinal Theory" },
+                { "name": "Descriptive Set Theory" },
+                { "name": "Inner Model Theory" },
+                { "name": "Constructive Mathematics" },
+                { "name": "Categorical Logic" },
+                { "name": "Topos Theory" }
+            ]
+        },
+        {
+            "name": "Mathematics",
+            "children": [
+                { "name": "Algebra" },
+                { "name": "Linear Algebra" },
+                { "name": "Abstract Algebra" },
+                { "name": "Group Theory" },
+                { "name": "Ring Theory" },
+                { "name": "Field Theory" },
+                { "name": "Galois Theory" },
+                { "name": "Module Theory" },
+                { "name": "Homological Algebra" },
+                { "name": "Commutative Algebra" },
+                { "name": "Noncommutative Algebra" },
+                { "name": "Lie Theory" },
+                { "name": "Representation Theory" },
+                { "name": "Universal Algebra" },
+                { "name": "Lattice Theory" },
+                { "name": "Operator Algebras" },
+                { "name": "Boolean Algebra" },
+                { "name": "Hopf Algebras" },
+                { "name": "Clifford Algebras" },
+                { "name": "C*-Algebras" },
+                { "name": "Analysis" },
+                { "name": "Real Analysis" },
+                { "name": "Complex Analysis" },
+                { "name": "Functional Analysis" },
+                { "name": "Measure Theory" },
+                { "name": "Harmonic Analysis" },
+                { "name": "Fourier Analysis" },
+                { "name": "Distribution Theory" },
+                { "name": "Spectral Theory" },
+                { "name": "Calculus of Variations" },
+                { "name": "Dynamical Systems" },
+                { "name": "Ergodic Theory" },
+                { "name": "Chaos Theory" },
+                { "name": "Bifurcation Theory" },
+                { "name": "Ordinary Differential Equations" },
+                { "name": "Partial Differential Equations" },
+                { "name": "Stochastic Differential Equations" },
+                { "name": "Geometry" },
+                { "name": "Euclidean Geometry" },
+                { "name": "Differential Geometry" },
+                { "name": "Riemannian Geometry" },
+                { "name": "Symplectic Geometry" },
+                { "name": "Algebraic Geometry" },
+                { "name": "Projective Geometry" },
+                { "name": "Non-Euclidean Geometry" },
+                { "name": "Convex Geometry" },
+                { "name": "Discrete Geometry" },
+                { "name": "Topology" },
+                { "name": "Point-Set Topology" },
+                { "name": "Algebraic Topology" },
+                { "name": "Differential Topology" },
+                { "name": "Knot Theory" },
+                { "name": "Geometric Topology" },
+                { "name": "Low-Dimensional Topology" },
+                { "name": "Number Theory" },
+                { "name": "Analytic Number Theory" },
+                { "name": "Algebraic Number Theory" },
+                { "name": "Geometric Number Theory" },
+                { "name": "Arithmetic Geometry" },
+                { "name": "Diophantine Equations" },
+                { "name": "Modular Forms" },
+                { "name": "Elliptic Curves" },
+                { "name": "Class Field Theory" },
+                { "name": "Automorphic Forms" },
+                { "name": "Langlands Program" },
+                { "name": "Iwasawa Theory" },
+                { "name": "p-adic Number Theory" },
+                { "name": "Combinatorics" },
+                { "name": "Enumerative Combinatorics" },
+                { "name": "Algebraic Combinatorics" },
+                { "name": "Extremal Combinatorics" },
+                { "name": "Probabilistic Combinatorics" },
+                { "name": "Ramsey Theory" },
+                { "name": "Design Theory" },
+                { "name": "Matroid Theory" },
+                { "name": "Order Theory" },
+                { "name": "Graph Theory" },
+                { "name": "Spectral Graph Theory" },
+                { "name": "Random Graph Theory" },
+                { "name": "Topological Graph Theory" },
+                { "name": "Probability Theory" },
+                { "name": "Stochastic Processes" },
+                { "name": "Martingale Theory" },
+                { "name": "Brownian Motion" },
+                { "name": "Itô Calculus" },
+                { "name": "Markov Chains" },
+                { "name": "Queueing Theory" },
+                { "name": "Percolation Theory" },
+                { "name": "Mathematical Statistics" },
+                { "name": "Bayesian Statistics" },
+                { "name": "Nonparametric Statistics" },
+                { "name": "Decision Theory" },
+                { "name": "Numerical Analysis" },
+                { "name": "Approximation Theory" },
+                { "name": "Finite Element Methods" },
+                { "name": "Optimization" },
+                { "name": "Linear Programming" },
+                { "name": "Convex Optimization" },
+                { "name": "Integer Programming" },
+                { "name": "Nonlinear Programming" },
+                { "name": "Stochastic Programming" },
+                { "name": "Multi-Objective Optimization" },
+                { "name": "Game Theory" },
+                { "name": "Cooperative Game Theory" },
+                { "name": "Evolutionary Game Theory" },
+                { "name": "Mechanism Design" },
+                { "name": "Auction Theory" },
+                { "name": "Social Choice Theory" },
+                { "name": "Mathematical Physics" },
+                { "name": "Quantum Mechanics (Mathematical)" },
+                { "name": "Statistical Mechanics (Mathematical)" },
+                { "name": "General Relativity (Mathematical)" },
+                { "name": "Quantum Field Theory (Mathematical)" },
+                { "name": "Integrable Systems" },
+                { "name": "Fractal Geometry" },
+                { "name": "Coding Theory" },
+                { "name": "Information Geometry" }
+            ]
+        },
+        {
+            "name": "Theoretical Computer Science",
+            "children": [
+                { "name": "Automata Theory" },
+                { "name": "Formal Languages" },
+                { "name": "Computability Theory" },
+                { "name": "Complexity Theory" },
+                { "name": "Circuit Complexity" },
+                { "name": "Communication Complexity" },
+                { "name": "Proof Complexity" },
+                { "name": "Descriptive Complexity" },
+                { "name": "Parameterized Complexity" },
+                { "name": "Algorithms & Data Structures" },
+                { "name": "Randomized Algorithms" },
+                { "name": "Approximation Algorithms" },
+                { "name": "Online Algorithms" },
+                { "name": "Streaming Algorithms" },
+                { "name": "Parallel Algorithms" },
+                { "name": "Distributed Algorithms" },
+                { "name": "Programming Language Theory" },
+                { "name": "Type Systems" },
+                { "name": "Lambda Calculus" },
+                { "name": "Denotational Semantics" },
+                { "name": "Operational Semantics" },
+                { "name": "Program Verification" },
+                { "name": "Abstract Interpretation" },
+                { "name": "Term Rewriting" },
+                { "name": "Compiler Theory" },
+                { "name": "Concurrency Theory" },
+                { "name": "Process Algebras" },
+                { "name": "Petri Nets" },
+                { "name": "Formal Methods" },
+                { "name": "Model Checking" },
+                { "name": "Theorem Proving" },
+                { "name": "Cryptography" },
+                { "name": "Public-Key Cryptography" },
+                { "name": "Post-Quantum Cryptography" },
+                { "name": "Zero-Knowledge Proofs" },
+                { "name": "Homomorphic Encryption" },
+                { "name": "Secure Multiparty Computation" },
+                { "name": "Information-Theoretic Security" },
+                { "name": "Quantum Computing Theory" },
+                { "name": "Quantum Algorithms" },
+                { "name": "Quantum Complexity Theory" },
+                { "name": "Quantum Error Correction" },
+                { "name": "Database Theory" },
+                { "name": "Relational Algebra" },
+                { "name": "Query Language Theory" },
+                { "name": "Transaction Theory" },
+                { "name": "Computational Learning Theory" },
+                { "name": "PAC Learning" },
+                { "name": "Statistical Learning Theory" },
+                { "name": "Algorithmic Information Theory" },
+                { "name": "Kolmogorov Complexity" },
+                { "name": "Cellular Automata" },
+                { "name": "Agent-Based Modeling" }
+            ]
+        },
+        {
+            "name": "Information & Systems Science",
+            "children": [
+                { "name": "Information Theory" },
+                { "name": "Shannon Information Theory" },
+                { "name": "Algorithmic Information Theory" },
+                { "name": "Quantum Information Theory" },
+                { "name": "Network Information Theory" },
+                { "name": "Rate-Distortion Theory" },
+                { "name": "Coding Theory" },
+                { "name": "Error-Correcting Codes" },
+                { "name": "Source Coding" },
+                { "name": "Network Coding" },
+                { "name": "Signal Processing Theory" },
+                { "name": "Control Theory" },
+                { "name": "Feedback Control" },
+                { "name": "Optimal Control" },
+                { "name": "Stochastic Control" },
+                { "name": "Systems Theory" },
+                { "name": "Cybernetics" },
+                { "name": "Complex Systems Theory" },
+                { "name": "Network Science" },
+                { "name": "Operations Research" },
+                { "name": "Mathematical Programming" },
+                { "name": "Reliability Theory" },
+                { "name": "Inventory Theory" }
+            ]
+        },
+        {
+            "name": "Applied Formal Sciences",
+            "children": [
+                { "name": "Cryptography & Security" },
+                { "name": "Formal Methods in Engineering" },
+                { "name": "Actuarial Science" },
+                { "name": "Financial Mathematics" },
+                { "name": "Actuarial Mathematics" },
+                { "name": "Mathematical Economics" },
+                { "name": "Econometrics" },
+                { "name": "Mathematical Biology" },
+                { "name": "Bioinformatics" },
+                { "name": "Computational Neuroscience" },
+                { "name": "Mathematical Linguistics" },
+                { "name": "Formal Semantics (Linguistics)" },
+                { "name": "Formal Epistemology" },
+                { "name": "Formal Ontology" },
+                { "name": "Description Logics" },
+                { "name": "Knowledge Representation" },
+                { "name": "Computational Logic" },
+                { "name": "Logic Programming" },
+                { "name": "Artificial Intelligence (Formal)" },
+                { "name": "Multi-Agent Systems (Formal)" },
+                { "name": "Automated Reasoning" }
+            ]
+        }
+    ]
+};
+
+// ========================================================
+// Query templates per category
+// Each category has a set of search terms for OpenAlex
+// ========================================================
+const CATEGORY_QUERIES = {
+    "Textbooks & Monographs": {
+        key: "textbook",
+        terms: ["textbook", "monograph", "introduction to", "handbook of", "graduate texts in", "cambridge university press", "springer", "foundations of"]
+    },
+    "Foundational Papers": {
+        key: "foundational",
+        terms: ["foundations", "seminal", "theorem", "proof of", "framework for", "theory of"]
+    },
+    "Recent Advances (2022–Present)": {
+        key: "recent",
+        terms: ["recent advances", "survey", "new results", "novel approach", "2024", "2023", "2025"]
+    },
+    "Survey & Review Articles": {
+        key: "survey",
+        terms: ["survey", "review", "overview", "comprehensive", "state of the art", "progress in"]
+    },
+    "Key Authors & Research Groups": {
+        key: "authors",
+        terms: []
+    },
+    "Journals & Conference Proceedings": {
+        key: "venues",
+        terms: []
+    }
+};
+
+// ========================================================
+// OpenAlex API client
+// ========================================================
+const OPENALEX_BASE = "https://api.openalex.org";
+
+async function openAlexSearch(query, filters = {}, page = 1, perPage = 20) {
+    const params = new URLSearchParams();
+    params.set("search", query);
+    params.set("per_page", perPage);
+    params.set("page", page);
+    for (const [k, v] of Object.entries(filters)) {
+        params.set(k, v);
+    }
+    const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
+    if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
+    return resp.json();
+}
+
+async function openAlexSearchConcept(conceptName, filters = {}, page = 1, perPage = 15) {
+    const params = new URLSearchParams();
+    params.set("search", conceptName);
+    params.set("per_page", perPage);
+    params.set("page", page);
+    for (const [k, v] of Object.entries(filters)) {
+        params.set(k, v);
+    }
+    params.set("sort", "cited_by_count:desc");
+    const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
+    if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
+    return resp.json();
+}
+
+async function openAlexSearchAuthors(conceptName, perPage = 10) {
+    const resp = await fetch(`${OPENALEX_BASE}/authors?search=${encodeURIComponent(conceptName)}&per_page=${perPage}&sort=cited_by_count:desc`);
+    if (!resp.ok) return { results: [] };
+    return resp.json();
+}
+
+async function openAlexSearchSources(conceptName, perPage = 10) {
+    const resp = await fetch(`${OPENALEX_BASE}/sources?search=${encodeURIComponent(conceptName)}&per_page=${perPage}&sort=cited_by_count:desc`);
+    if (!resp.ok) return { results: [] };
+    return resp.json();
+}
+
+// ========================================================
+// Bibliography generator
+// ========================================================
+async function generateBibliography(subfieldPath) {
+    const conceptName = subfieldPath.join(" ");
+    const cacheKey = conceptName.toLowerCase();
+    const cache = bibCache[cacheKey];
+    if (cache) return cache;
+
+    const queries = [
+        { label: "Textbooks & Monographs", search: `${conceptName} textbook handbook`, filters: { from_publication_date: "2000-01-01" }, perPage: 15 },
+        { label: "Foundational Papers", search: `${conceptName} foundations theory`, filters: { cited_by_count_min: "50" }, perPage: 15 },
+        { label: "Recent Advances", search: `${conceptName} research`, filters: { from_publication_date: "2022-01-01" }, perPage: 15 },
+        { label: "Survey & Review Articles", search: `${conceptName} survey review`, filters: {}, perPage: 10 },
+    ];
+
+    const results = {};
+    for (const q of queries) {
+        try {
+            const data = await openAlexSearchConcept(q.search, q.filters, 1, q.perPage);
+            results[q.label] = {
+                count: data.meta?.count || 0,
+                items: (data.results || []).map(r => ({
+                    title: r.title || "Untitled",
+                    authors: (r.authorships || []).map(a => a.author?.display_name).filter(Boolean),
+                    venue: r.primary_location?.source?.display_name || r.host_venue?.display_name || "",
+                    year: r.publication_year || "n.d.",
+                    citations: r.cited_by_count || 0,
+                    doi: r.doi || "",
+                    url: r.primary_location?.landing_page_url || r.doi || "",
+                    type: r.type || "article"
+                }))
+            };
+        } catch (e) {
+            results[q.label] = { count: 0, items: [] };
+        }
+        await sleep(200);
+    }
+
+    // Fetch authors
+    results["authors"] = { count: 0, items: [] };
+    try {
+        const authors = await openAlexSearchAuthors(conceptName, 8);
+        results["authors"] = {
+            count: authors.meta?.count || 0,
+            items: (authors.results || []).map(a => ({
+                name: a.display_name,
+                affiliation: (a.last_known_institution || a.affiliations?.[0]?.institution?.display_name) || "",
+                citations: a.cited_by_count || 0,
+                works: a.works_count || 0,
+                url: `https://openalex.org/${a.id?.split("/").pop()}`
+            }))
+        };
+    } catch (e) {}
+    await sleep(200);
+
+    // Fetch sources
+    results["venues"] = { count: 0, items: [] };
+    try {
+        const sources = await openAlexSearchSources(conceptName, 8);
+        results["venues"] = {
+            count: sources.meta?.count || 0,
+            items: (sources.results || []).map(s => ({
+                name: s.display_name,
+                type: s.type || "journal",
+                works: s.works_count || 0,
+                citations: s.cited_by_count || 0,
+                url: `https://openalex.org/${s.id?.split("/").pop()}`,
+                issn: (s.issn || []).join(", ")
+            }))
+        };
+    } catch (e) {}
+    await sleep(200);
+
+    results.generatedAt = new Date().toISOString();
+    bibCache[cacheKey] = results;
+    localStorage.setItem("bibCache", JSON.stringify(bibCache));
+
+    return results;
+}
+
+function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+// ========================================================
+// UI State
+// ========================================================
+let selectedPath = [];
+let currentBibResult = null;
+let bibCache = {};
+
+try {
+    bibCache = JSON.parse(localStorage.getItem("bibCache") || "{}");
+} catch(e) {
+    bibCache = {};
+}
+
+// ========================================================
+// Tree Rendering
+// ========================================================
+function renderTree() {
+    const container = document.getElementById("treeContainer");
+    container.innerHTML = buildTreeNode(TAXONOMY, 0, ["Formal Sciences"]);
+    setupTreeClickHandlers();
+}
+
+function buildTreeNode(node, depth, path) {
+    if (!node.children || node.children.length === 0) {
+        return `<div class="tree-leaf" data-path="${encodeURIComponent(JSON.stringify(path))}">${node.name}</div>`;
+    }
+
+    const pathStr = encodeURIComponent(JSON.stringify(path));
+    const childCount = node.children.length;
+    let html = `<div class="tree-item">`;
+    html += `<div class="tree-row" data-path="${pathStr}" data-children="true">`;
+    html += `<span class="tree-toggle">&#9654;</span>`;
+    html += `<span class="tree-label">${node.name}</span>`;
+    html += `<span class="tree-count">${childCount}</span>`;
+    html += `</div>`;
+    html += `<div class="tree-children collapsed">`;
+    for (const child of node.children) {
+        const childPath = [...path, child.name];
+        html += buildTreeNode(child, depth + 1, childPath);
+    }
+    html += `</div></div>`;
+    return html;
+}
+
+function setupTreeClickHandlers() {
+    document.querySelectorAll(".tree-row").forEach(row => {
+        row.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const row = e.currentTarget;
+            const children = row.nextElementSibling;
+            const toggle = row.querySelector(".tree-toggle");
+            if (children && children.classList.contains("tree-children")) {
+                children.classList.toggle("collapsed");
+                if (toggle) {
+                    toggle.textContent = children.classList.contains("collapsed") ? "▶" : "▼";
+                }
+            }
+            selectSubfield(JSON.parse(decodeURIComponent(row.dataset.path)));
+        });
+    });
+
+    document.querySelectorAll(".tree-leaf").forEach(leaf => {
+        leaf.addEventListener("click", () => {
+            selectSubfield(JSON.parse(decodeURIComponent(leaf.dataset.path)));
+        });
+    });
+}
+
+function selectSubfield(path) {
+    selectedPath = path;
+    document.querySelectorAll(".tree-row, .tree-leaf").forEach(el => el.classList.remove("active"));
+    const pathStr = encodeURIComponent(JSON.stringify(path));
+    const activeRow = document.querySelector(`[data-path="${pathStr}"]`);
+    if (activeRow) {
+        activeRow.classList.add("active");
+        // Expand parents
+        let parent = activeRow.parentElement;
+        while (parent && parent.classList.contains("tree-children")) {
+            parent.classList.remove("collapsed");
+            parent = parent.parentElement?.nextElementSibling === parent ? null : parent.parentElement?.parentElement || null;
+        }
+        // Update toggle icons
+        document.querySelectorAll(".tree-children:not(.collapsed) .tree-toggle").forEach(t => t.textContent = "▼");
+    }
+    // Close sidebar on mobile
+    document.getElementById("sidebar").classList.remove("open");
+    loadBibliography(path);
+}
+
+// ========================================================
+// Bibliography Display
+// ========================================================
+async function loadBibliography(path) {
+    const content = document.getElementById("content");
+    const displayName = path.slice(1).join(" > ") || "Formal Sciences";
+
+    content.innerHTML = `
+        <div class="bib-header">
+            <div class="bib-breadcrumb">${displayName}</div>
+            <div class="bib-title">Generating bibliography...</div>
+        </div>
+        <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+    `;
+
+    const conceptName = path.slice(1).join(" ");
+
+    try {
+        const results = await generateBibliography(path.slice(1));
+        currentBibResult = results;
+        displayBibliography(results, displayName, conceptName);
+    } catch (e) {
+        content.innerHTML = `
+            <div class="bib-header">
+                <div class="bib-breadcrumb">${displayName}</div>
+                <div class="bib-title">Error loading bibliography</div>
+                <div class="bib-subtitle">${e.message}</div>
+            </div>
+            <div class="bib-actions">
+                <button class="bib-action-btn primary" onclick="loadBibliography(${JSON.stringify(path)})">Retry</button>
+            </div>
+        `;
+    }
+}
+
+function displayBibliography(results, displayName, conceptName) {
+    const content = document.getElementById("content");
+    const totalItems = Object.values(results).reduce((acc, r) => acc + (r.items?.length || 0), 0) - 1;
+
+    let html = `
+        <div class="bib-header">
+            <div class="bib-breadcrumb">${displayName}</div>
+            <div class="bib-title">${conceptName}</div>
+            <div class="bib-subtitle">Comprehensive Bibliography</div>
+            <div class="bib-stats">
+    `;
+
+    const labels = ["Textbooks & Monographs", "Foundational Papers", "Recent Advances", "Survey & Review Articles"];
+    for (const label of labels) {
+        const r = results[label];
+        if (r && r.count) {
+            html += `<div class="bib-stat"><span class="bib-stat-num">${r.count.toLocaleString()}</span> ${label}</div>`;
+        }
+    }
+    const itemCount = (results["Textbooks & Monographs"]?.items?.length || 0) +
+                      (results["Foundational Papers"]?.items?.length || 0) +
+                      (results["Recent Advances"]?.items?.length || 0) +
+                      (results["Survey & Review Articles"]?.items?.length || 0);
+    html += `<div class="bib-stat"><span class="bib-stat-num">${itemCount}</span> Total papers</div>`;
+    html += `</div>`;
+
+    // Action buttons
+    html += `<div class="bib-actions">
+        <button class="bib-action-btn" onclick="exportAs('bibtex')">Export BibTeX</button>
+        <button class="bib-action-btn" onclick="exportAs('json')">Export JSON</button>
+        <button class="bib-action-btn" onclick="exportAs('csv')">Export CSV</button>
+        <button class="bib-action-btn" onclick="window.print()">Print</button>
+    </div></div>`;
+
+    // Paper sections
+    for (const label of labels) {
+        const r = results[label];
+        if (!r || !r.items || r.items.length === 0) continue;
+        html += `<div class="bib-section"><div class="bib-section-header">`;
+        html += `<span class="bib-section-title">${label}</span>`;
+        html += `<span class="bib-section-count">${r.items.length} items · ${r.count?.toLocaleString()} available</span>`;
+        html += `</div>`;
+        for (const item of r.items) {
+            html += renderBibEntry(item);
+        }
+        html += `</div>`;
+    }
+
+    // Authors section
+    if (results.authors?.items?.length > 0) {
+        html += `<div class="bib-section"><div class="bib-section-header">`;
+        html += `<span class="bib-section-title">Key Authors</span>`;
+        html += `<span class="bib-section-count">${results.authors.items.length} researchers</span>`;
+        html += `</div>`;
+        for (const a of results.authors.items) {
+            html += `<div class="bib-entry">
+                <div class="bib-entry-title">${a.name}</div>
+                <div class="bib-entry-authors">${a.affiliation || "Independent researcher"}</div>
+                <div class="bib-entry-meta">
+                    <span>Cited: ${a.citations.toLocaleString()}</span>
+                    <span>Works: ${a.works}</span>
+                </div>
+                <a class="bib-entry-link" href="${a.url}" target="_blank">OpenAlex Profile →</a>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+
+    // Venues section
+    if (results.venues?.items?.length > 0) {
+        html += `<div class="bib-section"><div class="bib-section-header">`;
+        html += `<span class="bib-section-title">Key Journals & Venues</span>`;
+        html += `<span class="bib-section-count">${results.venues.items.length} venues</span>`;
+        html += `</div>`;
+        for (const v of results.venues.items) {
+            const typeIcon = v.type === "journal" ? "📰" : v.type === "conference" ? "🏛️" : "📄";
+            html += `<div class="bib-entry">
+                <div class="bib-entry-title">${typeIcon} ${v.name}</div>
+                <div class="bib-entry-venue">${v.issn || v.type}</div>
+                <div class="bib-entry-meta">
+                    <span>Works: ${v.works.toLocaleString()}</span>
+                    <span>Cited: ${v.citations.toLocaleString()}</span>
+                </div>
+                <a class="bib-entry-link" href="${v.url}" target="_blank">OpenAlex →</a>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+
+    html += `<div style="font-size:0.7rem;color:var(--text-light);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);">Generated: ${new Date(results.generatedAt).toLocaleString()} · Data: OpenAlex API · <a href="https://openalex.org" target="_blank" class="bib-entry-link" style="display:inline;">OpenAlex.org</a></div>`;
+
+    content.innerHTML = html;
+}
+
+function renderBibEntry(item) {
+    const authorStr = item.authors.length > 0
+        ? (item.authors.length > 3 ? item.authors.slice(0, 3).join(", ") + " et al." : item.authors.join(", "))
+        : "Unknown";
+
+    let html = `<div class="bib-entry">`;
+    html += `<div class="bib-entry-title">${item.title}</div>`;
+    html += `<div class="bib-entry-authors">${authorStr}</div>`;
+    if (item.venue) html += `<div class="bib-entry-venue">${item.venue}${item.year ? ' (' + item.year + ')' : ''}</div>`;
+
+    const typeIcon = item.type === "book" ? "📘" : item.type === "article" ? "📄" : "📃";
+    const tags = [];
+    if (item.type) tags.push(item.type);
+    if (tags.length) html = `<span class="bib-tag">${typeIcon} ${tags.join(", ")}</span>` + html;
+
+    html += `<div class="bib-entry-meta">`;
+    if (item.citations > 0) html += `<span>Cited: ${item.citations.toLocaleString()}</span>`;
+    html += `</div>`;
+    if (item.url) html += `<a class="bib-entry-link" href="${item.url}" target="_blank">View paper →</a>`;
+    if (item.doi) html += ` <a class="bib-entry-link" href="https://doi.org/${item.doi}" target="_blank">DOI →</a>`;
+    html += `</div>`;
+    return html;
+}
+
+// ========================================================
+// Export
+// ========================================================
+function exportAs(format) {
+    if (!currentBibResult) return;
+    const items = [];
+    for (const [label, data] of Object.entries(currentBibResult)) {
+        if (typeof data === "string" || !data.items) continue;
+        for (const item of data.items) {
+            item._category = label;
+            items.push(item);
+        }
+    }
+
+    let output, title, ext;
+    const subfield = selectedPath.slice(1).join("-").toLowerCase().replace(/\s+/g, "-");
+
+    if (format === "json") {
+        output = JSON.stringify({
+            subfield: selectedPath.slice(1).join(" > "),
+            generatedAt: currentBibResult.generatedAt,
+            papers: items.filter(i => i._category !== "authors" && i._category !== "venues"),
+            authors: items.filter(i => i._category === "authors"),
+            venues: items.filter(i => i._category === "venues")
+        }, null, 2);
+        title = "JSON";
+        ext = "json";
+    } else if (format === "bibtex") {
+        output = items.filter(i => i._category !== "authors" && i._category !== "venues").map((item, idx) => {
+            const key = `${item.authors[0]?.split(/\s+/).pop() || "anon"}${item.year}${idx}`.toLowerCase();
+            const type = item.type === "book" ? "book" : "article";
+            let bib = `@${type}{${key},\n`;
+            bib += `  title = {${item.title.replace(/[{}]/g, '')}},\n`;
+            bib += `  author = {${item.authors.join(' and ')}},\n`;
+            bib += `  year = {${item.year}},\n`;
+            if (item.venue) bib += `  journal = {${item.venue}},\n`;
+            if (item.doi) bib += `  doi = {${item.doi}},\n`;
+            if (item.citations) bib += `  note = {Cited by: ${item.citations}},\n`;
+            bib += `}`;
+            return bib;
+        }).join("\n\n");
+        title = "BibTeX";
+        ext = "bib";
+    } else if (format === "csv") {
+        const header = "title,authors,year,venue,citations,doi,type,category,url\n";
+        const rows = items.filter(i => i._category !== "authors" && i._category !== "venues").map(item =>
+            `"${(item.title||'').replace(/"/g,'""')}","${item.authors.join('; ')}","${item.year}","${(item.venue||'').replace(/"/g,'""')}","${item.citations}","${item.doi||''}","${item.type||''}","${item._category}","${item.url||''}"`
+        ).join("\n");
+        output = header + rows;
+        title = "CSV";
+        ext = "csv";
+    }
+
+    document.getElementById("exportTitle").textContent = `Export as ${title}`;
+    document.getElementById("exportCode").textContent = output;
+    document.getElementById("downloadBtn").onclick = () => {
+        const blob = new Blob([output], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `bibliography-${subfield}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        closeExport();
+    };
+    document.getElementById("exportModal").classList.add("open");
+}
+
+function copyExport() {
+    const text = document.getElementById("exportCode").textContent;
+    navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard"));
+}
+
+function downloadExport() {
+    document.getElementById("downloadBtn").click();
+}
+
+function closeExport() {
+    document.getElementById("exportModal").classList.remove("open");
+}
+
+function showToast(msg) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+
+// ========================================================
+// Dark mode
+// ========================================================
+function toggleDark() {
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", isDark ? "" : "dark");
+    document.getElementById("themeBtn").textContent = isDark ? "Dark" : "Light";
+    localStorage.setItem("theme", isDark ? "light" : "dark");
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.getElementById("themeBtn").textContent = "Light";
+}
+
+// ========================================================
+// Search in sidebar
+// ========================================================
+document.getElementById("sideSearch").addEventListener("input", function(e) {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) {
+        document.querySelectorAll(".tree-item, .tree-leaf, .tree-row").forEach(el => el.style.display = "");
+        return;
+    }
+    document.querySelectorAll(".tree-leaf").forEach(leaf => {
+        const match = leaf.textContent.toLowerCase().includes(term);
+        leaf.style.display = match ? "" : "none";
+        if (match) {
+            let p = leaf.parentElement;
+            while (p && p !== document.getElementById("treeContainer")) {
+                if (p.classList.contains("tree-item")) {
+                    const children = p.querySelector(":scope > .tree-children");
+                    if (children) children.classList.remove("collapsed");
+                }
+                p = p.parentElement;
+            }
+        }
+    });
+    document.querySelectorAll(".tree-row").forEach(row => {
+        const match = row.querySelector(".tree-label")?.textContent.toLowerCase().includes(term);
+        row.style.display = match ? "" : "none";
+    });
+});
+
+// ========================================================
+// Mobile sidebar toggle
+// ========================================================
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("open");
+}
+
+// ========================================================
+// Init
+// ========================================================
+renderTree();
+</script>
+
+</body>
+</html>
