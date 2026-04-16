@@ -1012,15 +1012,73 @@ async function openAlexSearch(query, filters = {}, page = 1, perPage = 20) {
     return resp.json();
 }
 
-async function openAlexSearchConcept(conceptName, filters = {}, page = 1, perPage = 15) {
+/**
+ * Look up an OpenAlex concept by name.
+ * Returns { conceptId, displayName, worksCount } or null if no good match.
+ */
+async function lookupConcept(query) {
+    try {
+        const resp = await fetch(
+            `${OPENALEX_BASE}/concepts?search=${encodeURIComponent(query)}&per_page=3`
+        );
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        const results = data.results || [];
+        for (const c of results) {
+            // Check relevance: score > 0.5 or the name matches closely
+            const score = c.relevance_score || 0;
+            const nameLower = (c.display_name || "").toLowerCase();
+            const queryLower = query.toLowerCase();
+            // Accept if high relevance score or exact/close name match
+            if (score > 0.5 || nameLower === queryLower || nameLower.includes(queryLower)) {
+                return {
+                    conceptId: c.id.replace(/^.*\//, ""),     // "https://openalex.org/C185701065" -> "C185701065"
+                    displayName: c.display_name,
+                    worksCount: c.works_count || 0
+                };
+            }
+        }
+    } catch (e) {
+        // silent - caller will fall back
+    }
+    return null;
+}
+
+/**
+ * Search works using a concept ID filter (not free-text search).
+ * @param {string|null} conceptId - The numeric concept ID, or null to skip concept filter
+ * @param {string} fallbackQuery - If conceptId is null, use this as a title.search filter
+ * @param {object} extraFilters - OpenAlex filter key-value pairs
+ * @param {number} page - Page number
+ * @param {number} perPage - Results per page
+ */
+async function openAlexSearchConcept(conceptId, fallbackQuery, extraFilters = {}, page = 1, perPage = 15) {
     const params = new URLSearchParams();
-    params.set("search", conceptName);
     params.set("per_page", perPage);
     params.set("page", page);
-    for (const [k, v] of Object.entries(filters)) {
-        params.set(k, v);
-    }
     params.set("sort", "cited_by_count:desc");
+
+    if (conceptId) {
+        // Build filter string: concepts.id:XXX plus any extra filters
+        const filterParts = [`concepts.id:${conceptId}`];
+        for (const [k, v] of Object.entries(extraFilters)) {
+            filterParts.push(`${k}:${v}`);
+        }
+        params.set("filter", filterParts.join(","));
+    } else if (fallbackQuery) {
+        // Fall back to exact title search instead of free-text search
+        const filterParts = [`title.search:"${fallbackQuery}"`];
+        for (const [k, v] of Object.entries(extraFilters)) {
+            filterParts.push(`${k}:${v}`);
+        }
+        params.set("filter", filterParts.join(","));
+    } else {
+        // Last resort: no filters, just sort by citations
+        for (const [k, v] of Object.entries(extraFilters)) {
+            params.set(k, v);
+        }
+    }
+
     const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
     if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
     return resp.json();
@@ -1047,11 +1105,33 @@ async function generateBibliography(subfieldPath) {
     const cache = bibCache[cacheKey];
     if (cache) return cache;
 
+    // Step 1: Look up the concept in OpenAlex
+    const conceptLookup = await lookupConcept(conceptName);
+    const conceptId = conceptLookup ? conceptLookup.conceptId : null;
+
+    // Step 2: Build category-specific queries using concept filter
     const queries = [
-        { label: "Textbooks & Monographs", search: `${conceptName} textbook handbook`, filters: { from_publication_date: "2000-01-01" }, perPage: 15 },
-        { label: "Foundational Papers", search: `${conceptName} foundations theory`, filters: { cited_by_count_min: "50" }, perPage: 15 },
-        { label: "Recent Advances", search: `${conceptName} research`, filters: { from_publication_date: "2022-01-01" }, perPage: 15 },
-        { label: "Survey & Review Articles", search: `${conceptName} survey review`, filters: {}, perPage: 10 },
+        {
+            label: "Textbooks & Monographs",
+            filters: { type: "book" },
+            perPage: 15
+        },
+        {
+            label: "Foundational Papers",
+            filters: { from_publication_date: "1900-01-01", to_publication_date: "2021-12-31", cited_by_count_min: "30" },
+            perPage: 15
+        },
+        {
+            label: "Recent Advances",
+            filters: { from_publication_date: "2022-01-01" },
+            perPage: 15
+        },
+        {
+            label: "Survey & Review Articles",
+            extraSearch: "survey review",
+            filters: {},
+            perPage: 10
+        },
     ];
 
     const results = {};
@@ -1059,7 +1139,30 @@ async function generateBibliography(subfieldPath) {
 
     for (const q of queries) {
         try {
-            const data = await openAlexSearchConcept(q.search, q.filters, 1, q.perPage);
+            // For survey/review, we add search on top of concept filter
+            let data;
+            if (q.extraSearch && !conceptId) {
+                // No concept match: use title search with survey keywords
+                data = await openAlexSearchConcept(null, `${conceptName} ${q.extraSearch}`, q.filters, 1, q.perPage);
+            } else if (q.extraSearch && conceptId) {
+                // Concept matched + survey keywords: use concept filter + search
+                const params = new URLSearchParams();
+                params.set("filter", `concepts.id:${conceptId}`);
+                params.set("search", q.extraSearch);
+                params.set("sort", "cited_by_count:desc");
+                params.set("per_page", q.perPage);
+                params.set("page", "1");
+                for (const [k, v] of Object.entries(q.filters)) {
+                    params.set(k, v);
+                }
+                const resp = await fetch(`${OPENALEX_BASE}/works?${params.toString()}`);
+                if (!resp.ok) throw new Error(`OpenAlex error ${resp.status}`);
+                data = await resp.json();
+            } else {
+                // Textbooks, Foundational, Recent: pure concept filter (or title-search fallback)
+                data = await openAlexSearchConcept(conceptId, conceptName, q.filters, 1, q.perPage);
+            }
+
             results[q.label] = {
                 count: data.meta?.count || 0,
                 items: (data.results || []).map(r => {
