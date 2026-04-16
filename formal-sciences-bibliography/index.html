@@ -1097,11 +1097,24 @@ async function openAlexSearchSources(conceptName, perPage = 10) {
 }
 
 // ========================================================
-// Bibliography generator
+// Cache version — bump this to invalidate old cached data
+// after API changes. Old entries use "bibCache", new use
+// "bibCache_v2".
 // ========================================================
+const CACHE_VERSION = "v2";
+const CACHE_KEY = `bibCache_${CACHE_VERSION}`;
+
+/**
+ * Generate a cache key that is versioned so stale data is ignored
+ * after the search logic changes from free-text to concept-filtered.
+ */
+function getCacheKey(conceptName) {
+    return `${CACHE_VERSION}:${conceptName.toLowerCase()}`;
+}
+
 async function generateBibliography(subfieldPath) {
     const conceptName = subfieldPath.join(" ");
-    const cacheKey = conceptName.toLowerCase();
+    const cacheKey = getCacheKey(conceptName);
     const cache = bibCache[cacheKey];
     if (cache) return cache;
 
@@ -1254,7 +1267,7 @@ async function generateBibliography(subfieldPath) {
 
     results.generatedAt = new Date().toISOString();
     bibCache[cacheKey] = results;
-    localStorage.setItem("bibCache", JSON.stringify(bibCache));
+    localStorage.setItem(CACHE_KEY, JSON.stringify(bibCache));
 
     return results;
 }
@@ -1271,7 +1284,9 @@ let currentBibResult = null;
 let bibCache = {};
 
 try {
-    bibCache = JSON.parse(localStorage.getItem("bibCache") || "{}");
+    bibCache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
+    // Remove old v1 cache to prevent confusion
+    localStorage.removeItem("bibCache");
 } catch(e) {
     bibCache = {};
 }
