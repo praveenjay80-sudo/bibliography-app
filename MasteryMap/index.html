@@ -825,7 +825,7 @@ SCHEMA:
                     model: modelSelector.value,
                     system: "Expert academic librarian. Generate CONCISE reading roadmaps. Keep output compact. Return ONLY the JSON object, nothing else.",
                     messages: [{ role: 'user', content: userPrompt }],
-                    max_tokens: 8192, stream: true,
+                    max_tokens: 10000, stream: true,
                 }),
             });
             if (!res.ok) { let e = ''; try { e = await res.text(); } catch(ex) {} throw new Error(`API Error (${res.status}): ${res.statusText}\n${e}`); }
