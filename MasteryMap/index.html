@@ -869,24 +869,29 @@ SCHEMA:
         }
     }
 
-    function escapeHtml(u) { return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function escapeHtml(u) { if (u == null || typeof u !== 'string') u = String(u ?? ''); return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
     function normalizeRoadmap(data) {
         data.overview = data.overview || data.description || '';
         data.estimated_time = data.estimated_time || data.estimated_time_to_mastery || data.total_duration || 'Varies';
         data.canon = data.canon || [];
+        data.canon.forEach(w => { w.title = w.title || ''; w.author = w.author || ''; w.why_canon = w.why_canon || ''; w.year = w.year || 0; });
         if (data.levels) data.levels.forEach(l => {
             l.name = l.name || l.title || '';
+            l.description = l.description || '';
             l.duration = l.duration || (l.duration_weeks ? l.duration_weeks + ' weeks' : '');
             l.milestone = l.milestone || l.milestones || '';
             l.level_summary = l.level_summary || l.summary || '';
             l.intellectual_lineage = l.intellectual_lineage || '';
+            l.key_concepts = l.key_concepts || [];
             if (l.papers) {
                 if (!data.classic_papers) data.classic_papers = [];
                 l.papers.forEach(p => data.classic_papers.push({title:p.title||'',author:p.author||'',year:p.year||0,why_seminal:p.why_seminal||p.significance||'',scholar_query:p.scholar_query||(p.title?p.title+' '+p.author:'')}));
                 delete l.papers;
             }
             if (l.books) l.books.forEach(b => {
+                b.title = b.title || '';
+                b.author = b.author || '';
                 b.why = b.why || b.reason || '';
                 b.chapters = b.chapters || b.focus || '';
                 b.google_scholar_query = b.google_scholar_query || (b.title + ' ' + b.author);
@@ -897,8 +902,8 @@ SCHEMA:
                 b.related_works = b.related_works || [];
             });
         });
-        if (data.specializations) data.specializations.forEach(s => { if(s.books) s.books.forEach(b => { b.why=b.why||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); b.seminal_rank=b.seminal_rank||3; b.influence_note=b.influence_note||''; b.awards=b.awards||[]; b.related_works=b.related_works||[]; }); });
-        if (data.classic_papers) data.classic_papers.forEach(p => { p.why_seminal = p.why_seminal || p.significance || ''; p.scholar_query = p.scholar_query || (p.title + ' ' + p.author); });
+        if (data.specializations) data.specializations.forEach(s => { if(s.books) s.books.forEach(b => { b.title=b.title||''; b.author=b.author||''; b.why=b.why||''; b.chapters=b.chapters||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); b.seminal_rank=b.seminal_rank||3; b.influence_note=b.influence_note||''; b.awards=b.awards||[]; b.related_works=b.related_works||[]; }); });
+        if (data.classic_papers) data.classic_papers.forEach(p => { p.title=p.title||''; p.author=p.author||''; p.why_seminal = p.why_seminal || p.significance || ''; p.scholar_query = p.scholar_query || (p.title + ' ' + p.author); });
         if (!data.specializations) data.specializations = [];
         if (!data.classic_papers) data.classic_papers = [];
         if (!data.canon) data.canon = [];
