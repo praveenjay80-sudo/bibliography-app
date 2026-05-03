@@ -816,7 +816,7 @@ Include a "canon" array: the 5-8 most essential, historically significant works 
 CRITICAL LIMITS (do NOT exceed): 2-3 books per level total. 8-10 key concepts per level. 5-8 specializations at top level. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query, plus "seminal_rank" (1=foundational, 2=major influence, 3=textbook). Every level needs milestone. Use "name" not "title". Return ONLY valid JSON — no text outside the JSON object. No markdown wrapping.
 
 SCHEMA:
-{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":3}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
+{"topic":"","overview":"","estimated_time":"","levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":3}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}],"canon":[{"title":"","author":"","year":0,"why_canon":""}]}`;
 
             const res = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
