@@ -801,31 +801,29 @@ Write 4-6 paragraphs (high school reading level):
         try {
             const papers = papersToggle.checked;
             const gw = greatWorksToggle.checked;
-            const modeHint = gw
-                ? 'GREAT WORKS MODE: Prioritize only Nobel/Fields/Turing/Pulitzer/Booker-winning works and field-founding texts. Every book must be a landmark.'
-                : 'Include a mix of standard textbooks and seminal works.';
 
             const userPrompt = `Generate a concise academic reading roadmap for mastering: "${topic}".
 
-${modeHint}
+${gw ? 'GREAT WORKS MODE: Prioritize Nobel/Fields/Turing-winning and field-founding seminal works over textbooks.' : 'Include a mix of textbooks and historically important works.'}
 
-Create 6-10 levels with real academic stage names. Each level: "level_summary", "intellectual_lineage" (1 SHORT sentence on prior thinkers/discoveries), 2-3 books, 8-10 key concepts, milestone.
+Create 6-10 levels covering absolute beginner to research frontier. Use real academic/career stage names adapted to THIS field, such as:
+"High School / Intro", "Undergraduate Foundations", "Upper Undergrad Core", "Graduate Foundations", "Graduate Specialization", "Doctoral Seminar", "Post-Doctoral Research", "Research Frontier", "Specialist / Expert", "Master Practitioner"
 
-Each book: "seminal_rank" (1=foundational/tectonic, 2=major influence, 3=textbook), "influence_note" (1 short sentence), "awards" ([] of recognitions like "Nobel Prize 1965").
+For EACH level, include "level_summary" (1-2 paragraphs, high-school reading level) explaining what this level achieves and how it builds on the previous level. Also include "intellectual_lineage" (1 short sentence on prior thinkers).
 
-Include "canon": 5-8 most essential works across the ENTIRE field.
+Include a "canon" array: the 5-8 most essential, historically significant works from the ENTIRE field.
 
-${papers ? 'Include 2-3 classic papers.' : 'No papers.'} Keep output COMPACT. Return ONLY valid JSON, no markdown.
+CRITICAL LIMITS (do NOT exceed): 2-3 books per level total. 8-10 key concepts per level. 5-8 specializations at top level. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query, plus "seminal_rank" (1=foundational, 2=major influence, 3=textbook). Every level needs milestone. Use "name" not "title". Return ONLY valid JSON — no text outside the JSON object. No markdown wrapping.
 
 SCHEMA:
-{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":1,"influence_note":"","awards":[]}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
+{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":3}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
 
             const res = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
                 body: JSON.stringify({
                     model: modelSelector.value,
-                    system: "Expert academic librarian. You know Nobel/Fields/Turing/Pulitzer/Booker-winning works, field-founding texts, and most-cited papers. Generate concise, accurate roadmaps with precise intellectual history. Return ONLY the JSON object, nothing else.",
+                    system: "Expert academic librarian. Generate CONCISE reading roadmaps. Keep output compact. Return ONLY the JSON object, nothing else.",
                     messages: [{ role: 'user', content: userPrompt }],
                     max_tokens: 8192, stream: true,
                 }),
@@ -1049,9 +1047,11 @@ SCHEMA:
 
             container.appendChild(levelDiv);
         }); else {
+            const keys = JSON.stringify(data && typeof data === 'object' ? Object.keys(data) : 'not an object');
             const emptyMsg = document.createElement('div');
             emptyMsg.style.cssText = 'text-align:center;padding:40px;color:#e67e22;font-size:16px;';
-            emptyMsg.textContent = 'No levels found in roadmap data. The API response may have been incomplete — try regenerating.';
+            emptyMsg.innerHTML = '<strong>No levels found in roadmap data.</strong><br><br>JSON keys received: <code>' + escapeHtml(keys) + '</code><br><br>Raw JSON logged to browser console (F12 to view).<br><br>Try regenerating.';
+            console.log('MasteryMap parsed JSON (no levels):', data);
             container.appendChild(emptyMsg);
         }
 
