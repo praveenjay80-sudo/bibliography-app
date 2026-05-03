@@ -884,6 +884,7 @@ SCHEMA:
             l.level_summary = l.level_summary || l.summary || '';
             l.intellectual_lineage = l.intellectual_lineage || '';
             l.key_concepts = l.key_concepts || [];
+            l.books = l.books || [];
             if (l.papers) {
                 if (!data.classic_papers) data.classic_papers = [];
                 l.papers.forEach(p => data.classic_papers.push({title:p.title||'',author:p.author||'',year:p.year||0,why_seminal:p.why_seminal||p.significance||'',scholar_query:p.scholar_query||(p.title?p.title+' '+p.author:'')}));
@@ -892,6 +893,7 @@ SCHEMA:
             if (l.books) l.books.forEach(b => {
                 b.title = b.title || '';
                 b.author = b.author || '';
+                b.year = b.year || 0;
                 b.why = b.why || b.reason || '';
                 b.chapters = b.chapters || b.focus || '';
                 b.google_scholar_query = b.google_scholar_query || (b.title + ' ' + b.author);
