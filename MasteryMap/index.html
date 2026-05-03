@@ -802,36 +802,30 @@ Write 4-6 paragraphs (high school reading level):
             const papers = papersToggle.checked;
             const gw = greatWorksToggle.checked;
             const modeHint = gw
-                ? 'GREAT WORKS MODE ACTIVE: Prioritize historically seminal, field-founding, Nobel/Fields/Turing/Pulitzer/Booker-winning works over standard textbooks. Every single book must be a genuine landmark that changed the field. Include ONLY works of high historical or intellectual significance.'
-                : 'Include a balanced mix of standard textbooks and seminal works, prioritizing accessible pedagogical quality alongside historically important texts.';
+                ? 'GREAT WORKS MODE: Prioritize only Nobel/Fields/Turing/Pulitzer/Booker-winning works and field-founding texts. Every book must be a landmark.'
+                : 'Include a mix of standard textbooks and seminal works.';
 
-            const userPrompt = `Generate an academic reading roadmap for mastering: "${topic}".
+            const userPrompt = `Generate a concise academic reading roadmap for mastering: "${topic}".
 
 ${modeHint}
 
-Create 6-10 levels covering absolute beginner to research frontier. Name each level using real academic/career stages adapted to THIS specific field (e.g. "High School Foundations", "Undergraduate Core", "Upper Division", "Graduate Seminar", "Doctoral Specialization", "Postdoctoral Research", "Research Frontier", "Master Practitioner").
+Create 6-10 levels with real academic stage names. Each level: "level_summary", "intellectual_lineage" (1 SHORT sentence on prior thinkers/discoveries), 2-3 books, 8-10 key concepts, milestone.
 
-For EACH level include "level_summary" (1-2 paragraphs, high-school reading level) AND "intellectual_lineage" (1 SHORT sentence tracing how this level's knowledge builds on prior thinkers, discoveries, or schools of thought).
+Each book: "seminal_rank" (1=foundational/tectonic, 2=major influence, 3=textbook), "influence_note" (1 short sentence), "awards" ([] of recognitions like "Nobel Prize 1965").
 
-For EACH book include:
-- "seminal_rank": 1 (foundational/tectonic — created or redefined the field), 2 (major influence — shaped research direction for decades), or 3 (excellent textbook/pedagogical work)
-- "influence_note": 1 SHORT impactful sentence (e.g. "Won Nobel Prize 1972 for antibodies", "Most-cited text in algebraic topology", "Founded quantum electrodynamics", "Established the modern theory of...")
-- "awards": array of notable recognitions like ["Nobel Prize 1965","Fields Medal 1954","Turing Award 1975","Pulitzer Prize 1988","Booker Prize 2002"]
-- "related_works": 1-2 closely related influential works (title+author+year) that complement or extend this book
+Include "canon": 5-8 most essential works across the ENTIRE field.
 
-Include a "canon" array: the 5-8 most essential, historically significant works from the ENTIRE field (across all levels). These are works every serious student of the field must know.
-
-CRITICAL LIMITS: 2-3 books per level. 8-10 key concepts per level. 5-8 specializations. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query. Every level needs milestone. Return ONLY valid JSON, no text outside the object, no markdown wrapping. Keep output compact.
+${papers ? 'Include 2-3 classic papers.' : 'No papers.'} Keep output COMPACT. Return ONLY valid JSON, no markdown.
 
 SCHEMA:
-{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":1,"influence_note":"","awards":[],"related_works":[{"title":"","author":"","year":0}]}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
+{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":1,"influence_note":"","awards":[]}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
 
             const res = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
                 body: JSON.stringify({
                     model: modelSelector.value,
-                    system: "You are a historian of science and academia — an expert in the intellectual history and MOST INFLUENTIAL WORKS across every academic discipline. You know which works won Nobels, Fields Medals, Turing Awards, Pulitzers, Bookers; which papers are the most-cited in their fields; which books founded entire sub-disciplines; and which texts appear in every Great Books canon. Your roadmaps are scholarly genealogies, not just book lists. Prioritize works that changed how humanity understands the world. Be precise with dates, names, awards, and the specific intellectual contribution of each work. Keep output COMPACT. Return ONLY the JSON object, nothing else.",
+                    system: "Expert academic librarian. You know Nobel/Fields/Turing/Pulitzer/Booker-winning works, field-founding texts, and most-cited papers. Generate concise, accurate roadmaps with precise intellectual history. Return ONLY the JSON object, nothing else.",
                     messages: [{ role: 'user', content: userPrompt }],
                     max_tokens: 8192, stream: true,
                 }),
@@ -963,7 +957,7 @@ SCHEMA:
         container.innerHTML = html;
 
         // Render levels
-        if (data.levels) data.levels.forEach((l, idx) => {
+        if (data.levels && data.levels.length) data.levels.forEach((l, idx) => {
             const levelDiv = document.createElement('div');
             levelDiv.style.cssText = 'background:#2c3e50;border:1px solid #34495e;border-radius:8px;padding:20px;margin-bottom:20px;';
 
@@ -1054,7 +1048,12 @@ SCHEMA:
               </div>`;
 
             container.appendChild(levelDiv);
-        });
+        }); else {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.style.cssText = 'text-align:center;padding:40px;color:#e67e22;font-size:16px;';
+            emptyMsg.textContent = 'No levels found in roadmap data. The API response may have been incomplete — try regenerating.';
+            container.appendChild(emptyMsg);
+        }
 
         // Render specializations
         if (data.specializations && data.specializations.length) {
