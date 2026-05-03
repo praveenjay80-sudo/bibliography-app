@@ -44,6 +44,60 @@
         input:checked + .slider:before { -webkit-transform: translateX(26px); -ms-transform: translateX(26px); transform: translateX(26px); }
         .slider.round { border-radius: 34px; }
         .slider.round:before { border-radius: 50%; }
+
+        /* Seminal badges */
+        .seminal-badge { display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;vertical-align:middle; }
+        .seminal-badge.rank-1 { background:#c0392b;color:#fff; }
+        .seminal-badge.rank-2 { background:#d35400;color:#fff; }
+        .seminal-badge.rank-3 { background:#7f8c8d;color:#fff; }
+        .seminal-badge.award-nobel { background:linear-gradient(135deg,#f1c40f,#c0392b);color:#1a1a2e; }
+        .seminal-badge.award-fields { background:linear-gradient(135deg,#8e44ad,#2980b9);color:#fff; }
+        .seminal-badge.award-turing { background:linear-gradient(135deg,#2c3e50,#e67e22);color:#fff; }
+        .seminal-badge.award-pulitzer { background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff; }
+        .seminal-badge.award-booker { background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff; }
+        .seminal-badge.citation-classic { background:#1abc9c;color:#1a1a2e; }
+
+        /* Hall of Fame */
+        .hall-of-fame { background:linear-gradient(135deg,rgba(241,196,15,0.15),rgba(231,76,60,0.08));border:2px solid #f1c40f;border-radius:10px;padding:24px;margin-bottom:24px; }
+        .hall-of-fame h3 { font-family:var(--serif-font);color:#f1c40f;font-size:20px;margin:0 0 16px 0;text-align:center;letter-spacing:1px; }
+        .hall-of-fame-entry { background:rgba(44,62,80,0.7);border-left:4px solid #f1c40f;padding:14px 18px;margin-bottom:10px;border-radius:0 6px 6px 0; }
+        .hall-of-fame-entry .hof-title { font-family:var(--serif-font);font-size:16px;color:#f1c40f;margin:0 0 2px 0; }
+        .hall-of-fame-entry .hof-meta { font-size:12px;color:#bdc3c7;margin:0 0 6px 0; }
+        .hall-of-fame-entry .hof-why { font-size:13px;color:#ecf0f1;font-style:italic;margin:0 0 8px 0; }
+        .hall-of-fame-entry .hof-links { display:flex;gap:8px;flex-wrap:wrap; }
+
+        /* Influence score */
+        .influence-score { display:inline-flex;align-items:center;gap:2px;font-size:11px;color:#f1c40f;margin-left:8px; }
+        .influence-score .star { color:#f1c40f; }
+
+        /* Related works */
+        .related-works { margin-top:8px;padding:8px 12px;background:rgba(52,73,94,0.4);border-radius:4px;font-size:12px;color:#bdc3c7; }
+        .related-works strong { color:#e67e22; }
+        .related-works a { color:#f1c40f;text-decoration:none; }
+
+        /* Intellectual lineage */
+        .intellectual-lineage { margin-top:12px;padding:10px 14px;background:rgba(142,68,173,0.1);border-left:3px solid #8e44ad;border-radius:0 4px 4px 0;font-size:13px;color:#bdc3c7;line-height:1.7; }
+        .intellectual-lineage strong { color:#8e44ad; }
+
+        /* Citation classics */
+        .citation-classics-header { display:inline-block;background:#1abc9c;color:#1a1a2e;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold;margin-bottom:8px; }
+
+        /* Enhanced book cards */
+        .book-card { background:#34495e;border-radius:6px;padding:14px;margin-bottom:10px;position:relative;border:1px solid transparent;transition:border-color 0.2s; }
+        .book-card.seminal-rank-1 { border-color:rgba(192,57,43,0.4); }
+        .book-card.seminal-rank-2 { border-color:rgba(211,84,0,0.3); }
+        .book-card .book-badges-row { display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;align-items:center; }
+        .book-card .book-links-row { display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px; }
+        .book-card .book-link,.hof-links .book-link { padding:5px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:12px;display:inline-block; }
+        .book-card .book-link.openalex,.hof-links .book-link.openalex { background:#2980b9; }
+        .book-card .book-link.semantic-scholar,.hof-links .book-link.semantic-scholar { background:#27ae60; }
+
+        /* Canon section */
+        .canon-section { background:linear-gradient(135deg,rgba(241,196,15,0.12),rgba(241,196,15,0.03));border:2px dashed #f1c40f;border-radius:10px;padding:20px;margin-bottom:24px; }
+        .canon-section h3 { font-family:var(--serif-font);color:#f1c40f;font-size:18px;margin:0 0 12px 0; }
+
+        .great-works-indicator { font-size:11px;color:#e67e22;margin-top:4px;font-style:italic; }
+
         #close-settings-btn { position: absolute; bottom: 20px; left: 20px; right: 20px; }
         #roadmap-container { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; }
         #roadmap-container.visible { opacity: 1; transform: translateY(0); }
@@ -58,11 +112,12 @@
             <h1>MasteryMap</h1>
             <ul class="feature-list">
                 <li>Streaming academic reading roadmaps via AI</li>
-                <li>300+ field taxonomy browser across 10 academic categories</li>
+                <li>500+ field taxonomy browser across 15 academic categories</li>
                 <li>Three-tier explanations — concept, level, and book</li>
                 <li>Completeness audit with Fix Level, Insert Level &amp; Add All buttons</li>
                 <li>Organic academic-stage levels — Undergraduate to Research Frontier</li>
-                <li>2-3 seminal books per level with Scholar &amp; Find Book links</li>
+                <li>2-3 seminal books per level with Scholar, OpenAlex &amp; Semantic Scholar links</li>
+                <li>Hall of Fame canonical works &amp; Great Works Mode for seminal scholarship</li>
             </ul>
             <div id="settings-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -101,6 +156,14 @@
                     <input type="checkbox" id="papers-toggle" checked>
                     <span class="slider round"></span>
                 </label>
+            </div>
+            <div class="setting">
+                <label for="great-works-toggle">Great Works Mode</label>
+                <label class="switch">
+                    <input type="checkbox" id="great-works-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <div class="great-works-indicator">Prioritizes Nobel/Fields/Turing-winning works, citation classics, and field-founding texts over standard textbooks.</div>
             </div>
             <button id="close-settings-btn">Close</button>
         </div>
@@ -146,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const apiKeyInput = document.getElementById('api-key-input');
     const modelSelector = document.getElementById('model-selector');
     const papersToggle = document.getElementById('papers-toggle');
+    const greatWorksToggle = document.getElementById('great-works-toggle');
     const browseBtn = document.getElementById('browse-btn');
 
     const taxonomyModal = document.getElementById('taxonomy-modal');
@@ -171,13 +235,19 @@ document.addEventListener('DOMContentLoaded', () => {
     taxonomyCloseBtn.addEventListener('click', () => { taxonomyModal.style.display = 'none'; });
     taxonomyModal.addEventListener('click', (e) => { if (e.target === taxonomyModal) taxonomyModal.style.display = 'none'; });
 
-    // --- Exhaustive Pre-populated L1 Academic Fields ---
+    // --- Hyper-Exhaustive Pre-populated L1 Academic Fields (15 categories, ~520+ fields) ---
     const L1_CATEGORIES = [
         {cat:"Formal Sciences", fields:[
             "Mathematics","Computer Science","Logic","Statistics","Systems Theory","Information Theory",
             "Game Theory","Theoretical Computer Science","Set Theory","Category Theory","Proof Theory",
             "Model Theory","Computability Theory","Complexity Theory","Cryptography","Numerical Analysis",
-            "Operations Research","Decision Theory","Cybernetics","Formal Languages","Automata Theory"
+            "Operations Research","Decision Theory","Cybernetics","Formal Languages","Automata Theory",
+            "Algebraic Geometry","Differential Geometry","Topology","Number Theory","Graph Theory",
+            "Algebraic Topology","Commutative Algebra","Representation Theory","K-Theory",
+            "Dynamical Systems","Partial Differential Equations","Functional Analysis",
+            "Combinatorics","Coding Theory","Mathematical Logic","Reverse Mathematics",
+            "Algorithmic Game Theory","Randomized Algorithms","Quantum Computation",
+            "Computational Geometry","Ergodic Theory","Lie Theory","Operator Algebras"
         ]},
         {cat:"Physical Sciences", fields:[
             "Physics","Chemistry","Astronomy","Earth Science","Atmospheric Science","Oceanography",
@@ -185,7 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
             "Relativity","Particle Physics","Nuclear Physics","Astrophysics","Cosmology","Planetary Science",
             "Physical Chemistry","Analytical Chemistry","Organic Chemistry","Inorganic Chemistry",
             "Polymer Chemistry","Geochemistry","Petrology","Mineralogy","Seismology","Meteorology",
-            "Climatology","Hydrology","Volcanology","Space Science","Nanotechnology"
+            "Climatology","Hydrology","Volcanology","Space Science","Nanotechnology",
+            "Classical Mechanics","Electrodynamics","Statistical Mechanics",
+            "Condensed Matter Physics","Plasma Physics","Atomic Physics","Molecular Physics",
+            "Chemical Physics","Surface Chemistry","Supramolecular Chemistry",
+            "Geophysics","Heliophysics","Magnetohydrodynamics","Acoustics",
+            "Soft Matter Physics","Photonics Science","Spectroscopy"
         ]},
         {cat:"Life Sciences", fields:[
             "Biology","Neuroscience","Biochemistry","Genetics","Ecology","Microbiology","Botany","Zoology",
@@ -193,7 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
             "Structural Biology","Systems Biology","Synthetic Biology","Bioinformatics","Biophysics",
             "Immunology","Virology","Parasitology","Entomology","Mycology","Marine Biology","Paleontology",
             "Anatomy","Physiology","Endocrinology","Toxicology","Pharmacology","Biomechanics",
-            "Conservation Biology","Ethology","Astrobiology","Pathology","Epidemiology"
+            "Conservation Biology","Ethology","Astrobiology","Pathology","Epidemiology",
+            "Epigenetics","Proteomics","Metabolomics","Neuroendocrinology",
+            "Cognitive Neuroscience","Computational Neuroscience","Psychopharmacology",
+            "Ethnobotany","Zoonotics","Cryobiology","Chronobiology","Population Genetics",
+            "Landscape Ecology","Restoration Ecology","Microbiome Science"
         ]},
         {cat:"Social Sciences", fields:[
             "Economics","Psychology","Sociology","Political Science","Anthropology","Archaeology",
@@ -201,7 +280,11 @@ document.addEventListener('DOMContentLoaded', () => {
             "International Relations","Criminology","Social Work","Demography","Gender Studies",
             "Media Studies","Urban Studies","Development Studies","Peace and Conflict Studies",
             "Human Geography","Cultural Anthropology","Social Psychology","Cognitive Science",
-            "Behavioral Economics","Organizational Behavior","Public Administration","Criminal Justice"
+            "Behavioral Economics","Organizational Behavior","Public Administration","Criminal Justice",
+            "Comparative Politics","Political Economy","Economic History","Economic Sociology",
+            "Environmental Psychology","Community Psychology","Forensic Psychology",
+            "Migration Studies","Indigenous Studies","Science and Technology Studies",
+            "Disability Studies","Surveillance Studies","Memory Studies"
         ]},
         {cat:"Humanities", fields:[
             "Philosophy","History","Literature","Art History","Music","Theology","Classics",
@@ -209,14 +292,21 @@ document.addEventListener('DOMContentLoaded', () => {
             "Theater","Creative Writing","Ethics","Metaphysics","Epistemology","Aesthetics","Phenomenology",
             "Hermeneutics","Philology","Museology","Digital Humanities","Translation Studies",
             "Musicology","Ethnomusicology","Literary Theory","Postcolonial Studies","Mythology",
-            "Folklore","Intellectual History","History of Science","Biblical Studies","Buddhist Studies"
+            "Folklore","Intellectual History","History of Science","Biblical Studies","Buddhist Studies",
+            "Chinese Philosophy","Indian Philosophy","Islamic Philosophy",
+            "African Philosophy","Japanese Philosophy","Korean Philosophy",
+            "Analytic Philosophy","Continental Philosophy","Pragmatism",
+            "Latin American Philosophy","Caribbean Thought","Russian Philosophy",
+            "Critical Theory","Queer Theory","World Literature","Book History"
         ]},
         {cat:"Arts", fields:[
             "Visual Arts","Painting","Sculpture","Photography","Architecture","Graphic Design",
             "Industrial Design","Fashion Design","Interior Design","Animation","Illustration",
             "Printmaking","Ceramics","Textile Arts","Jewelry Design","Game Design","Sound Art",
             "Video Art","Performance Art","Installation Art","Landscape Architecture","Urban Design",
-            "Calligraphy","Digital Art","Comics Studies","Choreography","Dance","Opera","Conducting"
+            "Calligraphy","Digital Art","Comics Studies","Choreography","Dance","Opera","Conducting",
+            "Glass Art","Mosaic Art","Street Art","New Media Art","Conceptual Art",
+            "Tapestry","Stained Glass","Woodcarving","Metal Arts","Paper Art"
         ]},
         {cat:"Engineering", fields:[
             "Mechanical Engineering","Electrical Engineering","Civil Engineering","Chemical Engineering",
@@ -225,7 +315,11 @@ document.addEventListener('DOMContentLoaded', () => {
             "Systems Engineering","Mining Engineering","Marine Engineering","Agricultural Engineering",
             "Structural Engineering","Transportation Engineering","Geotechnical Engineering",
             "Robotics","Mechatronics","Telecommunications Engineering","Food Engineering",
-            "Acoustical Engineering","Photonics","Hydraulic Engineering","Safety Engineering"
+            "Acoustical Engineering","Photonics","Hydraulic Engineering","Safety Engineering",
+            "Quantum Engineering","Nanoengineering","Tissue Engineering",
+            "Climate Engineering","Resilience Engineering","Water Resources Engineering",
+            "Biochemical Engineering","Fire Protection Engineering","Manufacturing Engineering",
+            "Ocean Engineering","Vehicle Engineering"
         ]},
         {cat:"Health Sciences", fields:[
             "Medicine","Nursing","Public Health","Dentistry","Veterinary Medicine","Pharmacy",
@@ -233,7 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
             "Chiropractic","Podiatry","Nutrition","Dietetics","Radiography","Anesthesiology",
             "Surgery","Pediatrics","Geriatrics","Psychiatry","Oncology","Cardiology","Neurology",
             "Dermatology","Obstetrics","Gynecology","Emergency Medicine","Sports Medicine",
-            "Rehabilitation Medicine","Palliative Care","Tropical Medicine","Medical Informatics"
+            "Rehabilitation Medicine","Palliative Care","Tropical Medicine","Medical Informatics",
+            "Regenerative Medicine","Reproductive Medicine","Aerospace Medicine",
+            "Sleep Medicine","Pain Medicine","Intensive Care Medicine",
+            "Medical Genetics","Infectious Disease Medicine","Rheumatology","Hematology"
         ]},
         {cat:"Business & Management", fields:[
             "Finance","Accounting","Marketing","Management","Entrepreneurship","Business Analytics",
@@ -242,7 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
             "Corporate Finance","Behavioral Finance","Financial Engineering","International Business",
             "Strategic Management","Innovation Management","Project Management","Brand Management",
             "Digital Marketing","Consumer Behavior","Business Ethics","Organizational Theory",
-            "Nonprofit Management","Agribusiness"
+            "Nonprofit Management","Agribusiness","Social Entrepreneurship",
+            "Family Business","Mergers & Acquisitions","Venture Capital","Private Equity"
         ]},
         {cat:"Interdisciplinary", fields:[
             "Artificial Intelligence","Data Science","Machine Learning","Robotics","Bioengineering",
@@ -252,7 +350,71 @@ document.addEventListener('DOMContentLoaded', () => {
             "Technology Policy","Computational Linguistics","Human-Computer Interaction","Biogeochemistry",
             "Remote Sensing","Geographic Information Systems","Evolutionary Psychology","Psycholinguistics",
             "Sociobiology","Neurosymbolic Computing","Cybernetics","Biomechatronics","Bioethics",
-            "Neuroethics","Agroecology","Ecotoxicology","One Health"
+            "Neuroethics","Agroecology","Ecotoxicology","One Health",
+            "Cognitive Archaeology","Animal-Computer Interaction","Neuroeconomics",
+            "Digital Sociology","Computational Social Science","Planetary Health",
+            "Behavioral Genetics","Narrative Medicine","Computational Creativity"
+        ]},
+        {cat:"Indigenous & Traditional Knowledge", fields:[
+            "Ethnobotany","Ethnoastronomy","Traditional Ecological Knowledge","Indigenous Law",
+            "Oral Historiography","Traditional Medicine Systems","Ayurveda",
+            "Traditional Chinese Medicine","Unani Medicine","Siddha Medicine",
+            "Indigenous Agriculture","Agroforestry Traditions","Traditional Navigation",
+            "Native American Knowledge","Aboriginal Australian Knowledge",
+            "Polynesian Wayfinding","Inuit Qaujimajatuqangit","Maori Matauranga",
+            "Amazonian Ethnobotany","African Ethnomathematics",
+            "Mesoamerican Calendrics","Indigenous Art Traditions","Sacred Geography",
+            "Traditional Water Management","Indigenous Linguistics",
+            "Korean Traditional Medicine","Ethiopian Traditional Medicine",
+            "Sami Traditional Knowledge","Tibetan Medicine","Andean Cosmovision"
+        ]},
+        {cat:"Vocational & Applied Arts", fields:[
+            "Culinary Arts","Baking & Pastry","Welding Technology","Carpentry",
+            "Cabinetmaking","Plumbing","Electrical Trades","HVAC Technology",
+            "Automotive Technology","Aviation Maintenance","Marine Mechanics",
+            "Precision Machining","Tool & Die Making","Wine Making","Brewing Science",
+            "Horticulture","Floristry","Cosmetology","Barbering",
+            "Tailoring & Dressmaking","Leatherworking","Bookbinding","Watchmaking","Gunsmithing",
+            "Musical Instrument Making","Taxidermy","Pyrotechnics","Blacksmithing",
+            "Stone Masonry","Glassblowing","Sign Painting","Farriery"
+        ]},
+        {cat:"Emerging & Speculative Sciences", fields:[
+            "Exoplanetology","Astroecology","Climatic Geoengineering",
+            "Consciousness Studies","Xenolinguistics","Xenobiology",
+            "Fusion Energy Research","Quantum Biology","Mind-Uploading Studies",
+            "Morphological Freedom","Space Colonization Studies",
+            "Artificial General Intelligence","Whole Brain Emulation",
+            "Molecular Nanotechnology","Programmable Matter",
+            "Longevity Science","Cryonics","Designer Probiotics",
+            "Futurology","Technological Singularity Studies",
+            "Superintelligence Alignment","Digital Physics","Simulation Hypothesis",
+            "Directed Panspermia","Megascale Engineering","Orbital Mechanics",
+            "Transhumanist Studies","Synthetic Morphology","Interstellar Studies"
+        ]},
+        {cat:"Martial & Movement Arts", fields:[
+            "Karate","Judo","Taekwondo","Brazilian Jiu-Jitsu","Muay Thai",
+            "Kung Fu","Aikido","Krav Maga","Capoeira","Wing Chun",
+            "Kendo","Iaido","Sumo","Savate","Sambo",
+            "Eskrima","Kalaripayattu","Silat","Hapkido","Jeet Kune Do",
+            "Mixed Martial Arts","Boxing","Wrestling","Fencing",
+            "Archery","Parkour","Tricking","Gymnastics",
+            "Acrobatics","Circus Arts","Stage Combat","Fight Choreography",
+            "Tai Chi","Baguazhang","Xingyiquan","Systema",
+            "Historical European Martial Arts","Vovinam","Bartitsu"
+        ]},
+        {cat:"Spiritual & Contemplative Traditions", fields:[
+            "Zen Buddhism","Tibetan Buddhism","Theravada Buddhism",
+            "Yoga Philosophy","Tantra","Advaita Vedanta","Dvaita Vedanta",
+            "Christian Mysticism","Sufism","Kabbalah","Hasidism",
+            "Daoism","Confucianism","Shinto","Jain Philosophy",
+            "Sikh Philosophy","Zoroastrianism","Baha'i Studies",
+            "Contemplative Neuroscience","Meditation Studies","Mindfulness Traditions",
+            "Monastic Traditions","Ritual Studies","Mystical Theology",
+            "Gnostic Studies","Hermetic Philosophy","Neoplatonism",
+            "Ecstatic Traditions","Shamanism","Animism",
+            "Western Esotericism","Comparative Mysticism",
+            "Eastern Orthodox Mysticism","Process Theology","Quaker Spirituality",
+            "Indigenous Spirituality","Dervish Traditions","Mantra Traditions"
         ]}
     ];
 
@@ -638,24 +800,38 @@ Write 4-6 paragraphs (high school reading level):
         let lastStatusUpdate = 0;
         try {
             const papers = papersToggle.checked;
-            const userPrompt = `Generate a concise academic reading roadmap for mastering: "${topic}".
+            const gw = greatWorksToggle.checked;
+            const modeHint = gw
+                ? 'GREAT WORKS MODE ACTIVE: Prioritize historically seminal, field-founding, Nobel/Fields/Turing/Pulitzer/Booker-winning works over standard textbooks. Every single book must be a genuine landmark that changed the field. Include ONLY works of high historical or intellectual significance.'
+                : 'Include a balanced mix of standard textbooks and seminal works, prioritizing accessible pedagogical quality alongside historically important texts.';
 
-Create 6-10 levels covering absolute beginner to research frontier. Use real academic/career stage names adapted to THIS field, such as:
-"High School / Intro", "Undergraduate Foundations", "Upper Undergrad Core", "Graduate Foundations", "Graduate Specialization", "Doctoral Seminar", "Post-Doctoral Research", "Research Frontier", "Specialist / Expert", "Master Practitioner"
+            const userPrompt = `Generate an academic reading roadmap for mastering: "${topic}".
 
-For EACH level, include "level_summary" (1-2 paragraphs, high-school reading level) explaining what this level achieves and how it builds on the previous level.
+${modeHint}
 
-CRITICAL LIMITS (do NOT exceed): 2-3 books per level total. 8-10 key concepts per level. 5-8 specializations at top level. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query. Every level needs milestone. Use "name" not "title". Return ONLY valid JSON — no text outside the JSON object. No markdown wrapping.
+Create 6-10 levels covering absolute beginner to research frontier. Name each level using real academic/career stages adapted to THIS specific field (e.g. "High School Foundations", "Undergraduate Core", "Upper Division", "Graduate Seminar", "Doctoral Specialization", "Postdoctoral Research", "Research Frontier", "Master Practitioner").
+
+For EACH level include "level_summary" (1-2 paragraphs, high-school reading level) AND "intellectual_lineage" (1 SHORT sentence tracing how this level's knowledge builds on prior thinkers, discoveries, or schools of thought).
+
+For EACH book include:
+- "seminal_rank": 1 (foundational/tectonic — created or redefined the field), 2 (major influence — shaped research direction for decades), or 3 (excellent textbook/pedagogical work)
+- "influence_note": 1 SHORT impactful sentence (e.g. "Won Nobel Prize 1972 for antibodies", "Most-cited text in algebraic topology", "Founded quantum electrodynamics", "Established the modern theory of...")
+- "awards": array of notable recognitions like ["Nobel Prize 1965","Fields Medal 1954","Turing Award 1975","Pulitzer Prize 1988","Booker Prize 2002"]
+- "related_works": 1-2 closely related influential works (title+author+year) that complement or extend this book
+
+Include a "canon" array: the 5-8 most essential, historically significant works from the ENTIRE field (across all levels). These are works every serious student of the field must know.
+
+CRITICAL LIMITS: 2-3 books per level. 8-10 key concepts per level. 5-8 specializations. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query. Every level needs milestone. Return ONLY valid JSON, no text outside the object, no markdown wrapping. Keep output compact.
 
 SCHEMA:
-{"topic":"","overview":"","estimated_time":"","levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":""}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
+{"topic":"","overview":"","estimated_time":"","canon":[{"title":"","author":"","year":0,"why_canon":""}],"levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","intellectual_lineage":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":"","seminal_rank":1,"influence_note":"","awards":[],"related_works":[{"title":"","author":"","year":0}]}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
 
             const res = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
                 body: JSON.stringify({
                     model: modelSelector.value,
-                    system: "Expert academic librarian. Generate CONCISE reading roadmaps. Keep output compact. Return ONLY the JSON object, nothing else.",
+                    system: "You are a historian of science and academia — an expert in the intellectual history and MOST INFLUENTIAL WORKS across every academic discipline. You know which works won Nobels, Fields Medals, Turing Awards, Pulitzers, Bookers; which papers are the most-cited in their fields; which books founded entire sub-disciplines; and which texts appear in every Great Books canon. Your roadmaps are scholarly genealogies, not just book lists. Prioritize works that changed how humanity understands the world. Be precise with dates, names, awards, and the specific intellectual contribution of each work. Keep output COMPACT. Return ONLY the JSON object, nothing else.",
                     messages: [{ role: 'user', content: userPrompt }],
                     max_tokens: 8192, stream: true,
                 }),
@@ -698,22 +874,34 @@ SCHEMA:
     function normalizeRoadmap(data) {
         data.overview = data.overview || data.description || '';
         data.estimated_time = data.estimated_time || data.estimated_time_to_mastery || data.total_duration || 'Varies';
+        data.canon = data.canon || [];
         if (data.levels) data.levels.forEach(l => {
             l.name = l.name || l.title || '';
             l.duration = l.duration || (l.duration_weeks ? l.duration_weeks + ' weeks' : '');
             l.milestone = l.milestone || l.milestones || '';
             l.level_summary = l.level_summary || l.summary || '';
+            l.intellectual_lineage = l.intellectual_lineage || '';
             if (l.papers) {
                 if (!data.classic_papers) data.classic_papers = [];
                 l.papers.forEach(p => data.classic_papers.push({title:p.title||'',author:p.author||'',year:p.year||0,why_seminal:p.why_seminal||p.significance||'',scholar_query:p.scholar_query||(p.title?p.title+' '+p.author:'')}));
                 delete l.papers;
             }
-            if (l.books) l.books.forEach(b => { b.why=b.why||b.reason||''; b.chapters=b.chapters||b.focus||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); });
+            if (l.books) l.books.forEach(b => {
+                b.why = b.why || b.reason || '';
+                b.chapters = b.chapters || b.focus || '';
+                b.google_scholar_query = b.google_scholar_query || (b.title + ' ' + b.author);
+                b.amazon_query = b.amazon_query || (b.title + ' ' + b.author);
+                b.seminal_rank = b.seminal_rank || 3;
+                b.influence_note = b.influence_note || '';
+                b.awards = b.awards || [];
+                b.related_works = b.related_works || [];
+            });
         });
-        if (data.specializations) data.specializations.forEach(s => { if(s.books) s.books.forEach(b => { b.why=b.why||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); }); });
-        if (data.classic_papers) data.classic_papers.forEach(p => { p.why_seminal=p.why_seminal||p.significance||''; p.scholar_query=p.scholar_query||(p.title+' '+p.author); });
+        if (data.specializations) data.specializations.forEach(s => { if(s.books) s.books.forEach(b => { b.why=b.why||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); b.seminal_rank=b.seminal_rank||3; b.influence_note=b.influence_note||''; b.awards=b.awards||[]; b.related_works=b.related_works||[]; }); });
+        if (data.classic_papers) data.classic_papers.forEach(p => { p.why_seminal = p.why_seminal || p.significance || ''; p.scholar_query = p.scholar_query || (p.title + ' ' + p.author); });
         if (!data.specializations) data.specializations = [];
         if (!data.classic_papers) data.classic_papers = [];
+        if (!data.canon) data.canon = [];
         return data;
     }
 
@@ -724,6 +912,39 @@ SCHEMA:
 
         // --- Completeness check panel (hidden by default) ---
         let html = `<div id="completeness-report" style="display:none;background:#1e2a38;border:2px solid #f1c40f;border-radius:8px;padding:20px;margin-bottom:20px;"></div>`;
+
+        // --- HALL OF FAME (canon array) ---
+        if (data.canon && data.canon.length > 0) {
+            html += `<div class="hall-of-fame">
+              <h3>HALL OF FAME — Most Influential Works in the Field</h3>`;
+            data.canon.forEach(w => {
+                html += `<div class="hall-of-fame-entry">
+                  <p class="hof-title">${escapeHtml(w.title)}</p>
+                  <p class="hof-meta">${escapeHtml(w.author)} &middot; ${w.year || ''}</p>
+                  <p class="hof-why">"${escapeHtml(w.why_canon || '')}"</p>
+                  <div class="hof-links">
+                    <a class="book-link" href="https://scholar.google.com/scholar?q=${encodeURIComponent(w.title + ' ' + w.author)}" target="_blank">Google Scholar</a>
+                    <a class="book-link openalex" href="https://openalex.org/works?search=${encodeURIComponent(w.title)}" target="_blank">OpenAlex Citations</a>
+                    <a class="book-link semantic-scholar" href="https://www.semanticscholar.org/search?q=${encodeURIComponent(w.title + ' ' + w.author)}" target="_blank">Semantic Scholar</a>
+                    <a class="book-link" href="https://www.amazon.com/s?k=${encodeURIComponent(w.title + ' ' + w.author)}" target="_blank">Find Book</a>
+                  </div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
+        // --- CANON summary ---
+        if (data.canon && data.canon.length > 0) {
+            html += `<div class="canon-section">
+              <h3>CANON — Essential Works Across All Levels</h3>`;
+            data.canon.forEach(w => {
+                html += `<div style="background:rgba(44,62,80,0.6);padding:8px 14px;margin:4px 0;border-radius:4px;font-size:13px;color:#ecf0f1;">
+                  <strong style="color:#f1c40f;">${escapeHtml(w.title)}</strong> — ${escapeHtml(w.author)} (${w.year || ''})<br>
+                  <span style="color:#bdc3c7;font-size:11px;">${escapeHtml(w.why_canon || '')}</span>
+                </div>`;
+            });
+            html += `</div>`;
+        }
 
         html += `<h2 style="font-family:Georgia,serif;color:#f1c40f;font-size:28px;">${escapeHtml(data.topic)}</h2>`;
         html += `<p><em>${escapeHtml(data.overview)}</em></p>`;
@@ -740,6 +961,7 @@ SCHEMA:
             levelDiv.style.cssText = 'background:#2c3e50;border:1px solid #34495e;border-radius:8px;padding:20px;margin-bottom:20px;';
 
             const prevLevel = idx > 0 ? data.levels[idx - 1].name : 'the absolute basics';
+            const citationClassics = (l.books || []).filter(b => b.seminal_rank === 1 || b.seminal_rank === 2);
 
             levelDiv.innerHTML = `
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
@@ -755,18 +977,61 @@ SCHEMA:
                 <div style="color:#ecf0f1;line-height:1.8;font-size:14px;">${escapeHtml(l.level_summary || l.summary || '')}</div>
               </div>
 
+              ${l.intellectual_lineage ? `<div class="intellectual-lineage"><strong>Intellectual Lineage:</strong> ${escapeHtml(l.intellectual_lineage)}</div>` : ''}
+
+              ${citationClassics.length > 0 ? `<div class="citation-classics-header">Citation Classics: ${citationClassics.length} seminal work(s) at this level</div>` : ''}
+
               <h4 style="color:#e67e22;font-family:Georgia,serif;">Key Texts (${l.books.length})</h4>
-              ${l.books.map(b => `<div style="background:#34495e;border-radius:4px;padding:12px;margin-bottom:8px;">
-                <h5 style="font-family:Georgia,serif;font-size:17px;margin:0 0 3px 0;">${escapeHtml(b.title)} (${b.year})</h5>
-                <p style="margin:0 0 3px 0;"><em>${escapeHtml(b.author)}</em></p>
-                <p style="margin:0 0 3px 0;"><strong>Why?</strong> ${escapeHtml(b.why)}</p>
-                <p style="margin:0 0 8px 0;"><strong>Focus:</strong> ${escapeHtml(b.chapters)}</p>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                  <a style="padding:6px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:13px;display:inline-block;" href="https://scholar.google.com/scholar?q=${encodeURIComponent(b.google_scholar_query)}" target="_blank">Scholar</a>
-                  <a style="padding:6px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:13px;display:inline-block;" href="https://www.amazon.com/s?k=${encodeURIComponent(b.amazon_query)}" target="_blank">Find Book</a>
-                  <button class="explain-book-btn" data-title="${escapeHtml(b.title)}" data-author="${escapeHtml(b.author)}" data-year="${b.year}" data-why="${escapeHtml(b.why)}" data-chapters="${escapeHtml(b.chapters)}" data-topic="${escapeHtml(rootTopic)}" data-level="${escapeHtml(l.name)}" style="background:#f1c40f;color:#1a1a2e;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;">Explain Book</button>
-                </div>
-              </div>`).join('')}
+              ${l.books.map(b => {
+                  const rankClass = b.seminal_rank === 1 ? 'seminal-rank-1' : (b.seminal_rank === 2 ? 'seminal-rank-2' : '');
+                  const rankLabel = b.seminal_rank === 1 ? 'Foundational' : (b.seminal_rank === 2 ? 'Major Influence' : 'Important Text');
+                  const rankBadgeClass = b.seminal_rank === 1 ? 'rank-1' : (b.seminal_rank === 2 ? 'rank-2' : 'rank-3');
+                  const infScore = b.seminal_rank === 1 ? 5 : (b.seminal_rank === 2 ? 4 : 3);
+                  const stars = Array.from({length:infScore}, () => '<span class="star">&#9733;</span>').join('');
+
+                  let awardBadges = '';
+                  if (b.awards && b.awards.length) {
+                      awardBadges = b.awards.map(a => {
+                          const aLower = a.toLowerCase();
+                          let badgeClass = '';
+                          if (aLower.includes('nobel')) badgeClass = 'award-nobel';
+                          else if (aLower.includes('fields')) badgeClass = 'award-fields';
+                          else if (aLower.includes('turing')) badgeClass = 'award-turing';
+                          else if (aLower.includes('pulitzer')) badgeClass = 'award-pulitzer';
+                          else if (aLower.includes('booker')) badgeClass = 'award-booker';
+                          else badgeClass = 'rank-3';
+                          return `<span class="seminal-badge ${badgeClass}">${escapeHtml(a)}</span>`;
+                      }).join('');
+                  }
+
+                  let relatedHtml = '';
+                  if (b.related_works && b.related_works.length) {
+                      relatedHtml = `<div class="related-works"><strong>Related Works:</strong> ` +
+                          b.related_works.map(rw => `<a href="https://scholar.google.com/scholar?q=${encodeURIComponent(rw.title + ' ' + rw.author)}" target="_blank">${escapeHtml(rw.title)} (${rw.year || ''})</a>`).join(' &middot; ') +
+                          `</div>`;
+                  }
+
+                  return `<div class="book-card ${rankClass}">
+                    <div class="book-badges-row">
+                      <span class="seminal-badge ${rankBadgeClass}">${rankLabel}</span>
+                      ${b.seminal_rank <= 2 ? '<span class="seminal-badge citation-classic">Citation Classic</span>' : ''}
+                      ${awardBadges}
+                    </div>
+                    <h5 style="font-family:Georgia,serif;font-size:17px;margin:0 0 3px 0;">${escapeHtml(b.title)} (${b.year}) <span class="influence-score">${stars}</span></h5>
+                    <p style="margin:0 0 3px 0;"><em>${escapeHtml(b.author)}</em></p>
+                    <p style="margin:0 0 3px 0;"><strong>Why?</strong> ${escapeHtml(b.why)}</p>
+                    <p style="margin:0 0 3px 0;"><strong>Focus:</strong> ${escapeHtml(b.chapters)}</p>
+                    ${b.influence_note ? `<p style="margin:0 0 6px 0;font-size:12px;color:#f1c40f;font-style:italic;">${escapeHtml(b.influence_note)}</p>` : ''}
+                    <div class="book-links-row">
+                      <a class="book-link" href="https://scholar.google.com/scholar?q=${encodeURIComponent(b.google_scholar_query)}" target="_blank">Google Scholar</a>
+                      <a class="book-link openalex" href="https://openalex.org/works?search=${encodeURIComponent(b.title + ' ' + b.author)}" target="_blank">OpenAlex Citations</a>
+                      <a class="book-link semantic-scholar" href="https://www.semanticscholar.org/search?q=${encodeURIComponent(b.title + ' ' + b.author)}" target="_blank">Semantic Scholar</a>
+                      <a class="book-link" href="https://www.amazon.com/s?k=${encodeURIComponent(b.amazon_query)}" target="_blank">Find Book</a>
+                      <button class="explain-book-btn" data-title="${escapeHtml(b.title)}" data-author="${escapeHtml(b.author)}" data-year="${b.year}" data-why="${escapeHtml(b.why)}" data-chapters="${escapeHtml(b.chapters)}" data-topic="${escapeHtml(rootTopic)}" data-level="${escapeHtml(l.name)}" style="background:#f1c40f;color:#1a1a2e;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;">Explain Book</button>
+                    </div>
+                    ${relatedHtml}
+                  </div>`;
+              }).join('')}
 
               <h4 style="color:#e67e22;font-family:Georgia,serif;">Key Concepts (${l.key_concepts.length})</h4>
               <ul style="list-style:none;padding-left:0;">
