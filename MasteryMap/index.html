@@ -1,0 +1,1220 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasteryMap</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --primary-color: #f1c40f;
+            --secondary-color: #e67e22;
+            --text-color: #ecf0f1;
+            --card-bg-color: #2c3e50;
+            --border-color: #34495e;
+            --serif-font: 'Georgia', 'Times New Roman', serif;
+            --sans-serif-font: 'Helvetica Neue', 'Arial', sans-serif;
+        }
+        body { font-family: var(--sans-serif-font); background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; line-height: 1.6; }
+        #app { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header { border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 20px; position: relative; }
+        header h1 { font-family: var(--serif-font); color: var(--primary-color); margin: 0 0 4px 0; font-size: 2rem; letter-spacing: 0.5px; text-shadow: 0 0 20px rgba(241,196,15,0.15); }
+        .feature-list { list-style: none; margin: 8px 0 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; }
+        .feature-list li { font-family: var(--sans-serif-font); font-size: 0.78rem; color: #a0b8cc; position: relative; padding-left: 14px; line-height: 1.5; }
+        .feature-list li::before { content: "▸"; position: absolute; left: 0; color: var(--secondary-color); font-size: 0.65rem; top: 1px; }
+        #settings-icon { cursor: pointer; color: var(--primary-color); position: absolute; top: 0; right: 0; }
+        #settings-icon { cursor: pointer; color: var(--primary-color); }
+        #input-container { display: flex; gap: 10px; margin-bottom: 20px; }
+        #topic-input { flex-grow: 1; padding: 10px; font-size: 16px; background-color: var(--card-bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; }
+        #generate-btn { padding: 10px 20px; font-size: 16px; background-color: var(--primary-color); color: var(--bg-color); border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #generate-btn:disabled { background-color: #555; cursor: not-allowed; }
+        #settings-panel { position: fixed; top: 0; right: -350px; width: 300px; height: 100%; background-color: #1e2a38; padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.5); transition: right 0.3s ease-in-out; z-index: 1000; }
+        #settings-panel.open { right: 0; }
+        #settings-panel h2 { font-family: var(--serif-font); color: var(--primary-color); margin-top: 0; }
+        .setting { margin-bottom: 15px; }
+        .setting label { display: block; margin-bottom: 5px; }
+        .setting input[type="password"], .setting select { width: 100%; padding: 8px; background-color: var(--card-bg-color); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; }
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { display:none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; -webkit-transition: .4s; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; -webkit-transition: .4s; transition: .4s; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+        input:checked + .slider:before { -webkit-transform: translateX(26px); -ms-transform: translateX(26px); transform: translateX(26px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+        #close-settings-btn { position: absolute; bottom: 20px; left: 20px; right: 20px; }
+        #roadmap-container { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; }
+        #roadmap-container.visible { opacity: 1; transform: translateY(0); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 600px) { #app { padding: 10px; } #input-container { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>MasteryMap</h1>
+            <ul class="feature-list">
+                <li>Streaming academic reading roadmaps via AI</li>
+                <li>300+ field taxonomy browser across 10 academic categories</li>
+                <li>Three-tier explanations — concept, level, and book</li>
+                <li>Completeness audit with Fix Level, Insert Level &amp; Add All buttons</li>
+                <li>Organic academic-stage levels — Undergraduate to Research Frontier</li>
+                <li>2-3 seminal books per level with Scholar &amp; Find Book links</li>
+            </ul>
+            <div id="settings-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+        </header>
+        <main>
+            <div id="input-container">
+                <input type="text" id="topic-input" placeholder="Type any topic... or Browse Fields">
+                <button id="browse-btn" style="padding:10px 16px;font-size:14px;background:#8e44ad;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;white-space:nowrap;">Browse Fields</button>
+                <button id="generate-btn">Generate Roadmap</button>
+            </div>
+            <div id="roadmap-container"></div>
+        </main>
+        <div id="settings-panel">
+            <h2>Settings</h2>
+            <div class="setting">
+                <label for="api-key-input">Anthropic API Key</label>
+                <input type="password" id="api-key-input">
+            </div>
+            <div class="setting">
+                <label for="model-selector">Model</label>
+                <select id="model-selector">
+                    <option value="claude-sonnet-4-6">claude-sonnet-4-6 (Fast, Recommended)</option>
+                    <option value="claude-opus-4-6">claude-opus-4-6 (Most thorough)</option>
+                    <option value="claude-sonnet-4-20250514">claude-sonnet-4-20250514</option>
+                    <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet-20241022</option>
+                    <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
+                </select>
+            </div>
+            <div class="setting">
+                <p style="font-size:12px;color:#bdc3c7;margin:5px 0 0 0;">Levels: organic (model decides based on field depth)</p>
+            </div>
+            <div class="setting">
+                <label for="papers-toggle">Include Classic Papers</label>
+                <label class="switch">
+                    <input type="checkbox" id="papers-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <button id="close-settings-btn">Close</button>
+        </div>
+        <!-- Taxonomy Browser Modal -->
+        <div id="taxonomy-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,0.8);z-index:3000;justify-content:center;align-items:flex-start;padding:30px;">
+            <div style="background-color:#1a1a2e;border:2px solid #8e44ad;border-radius:12px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+                <div style="padding:20px;border-bottom:1px solid #34495e;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+                    <h3 style="font-family:Georgia,serif;color:#8e44ad;margin:0;">Academic Fields Browser</h3>
+                    <button id="taxonomy-close-btn" style="background:none;border:none;color:#ecf0f1;font-size:28px;cursor:pointer;">&times;</button>
+                </div>
+                <div style="padding:12px 20px;border-bottom:1px solid #34495e;flex-shrink:0;">
+                    <input type="text" id="taxonomy-search" placeholder="Filter fields..." style="width:100%;padding:10px;font-size:15px;background:#2c3e50;border:1px solid #34495e;color:#ecf0f1;border-radius:4px;">
+                </div>
+                <div id="taxonomy-content" style="flex:1;overflow-y:auto;padding:15px 20px;">
+                    <div class="loader"></div><div style="text-align:center;color:#bdc3c7;margin-top:10px;">Loading academic fields via API...</div>
+                </div>
+                <div style="padding:10px 20px;border-top:1px solid #34495e;flex-shrink:0;font-size:11px;color:#7f8c8d;">
+                    Click any L1 field to expand L2 subfields. Click any item to select it.
+                </div>
+            </div>
+        </div>
+
+        <!-- Explain Modal -->
+        <div id="explain-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color:rgba(0,0,0,0.7); z-index:2000; justify-content:center; align-items:center; padding:20px;">
+            <div style="background-color:#2c3e50; border:2px solid #f1c40f; border-radius:12px; max-width:700px; width:100%; max-height:85vh; overflow-y:auto; padding:30px; position:relative;">
+                <button id="explain-close-btn" style="position:absolute; top:10px; right:15px; background:none; border:none; color:#ecf0f1; font-size:28px; cursor:pointer;">&times;</button>
+                <h3 id="explain-title" style="font-family:Georgia,serif; color:#f1c40f; margin:0 0 5px 0;"></h3>
+                <p id="explain-context" style="font-size:14px; color:#bdc3c7; margin:0 0 20px 0;"></p>
+                <div id="explain-content" style="color:#ecf0f1; line-height:1.7; font-size:15px; white-space:pre-wrap;"></div>
+                <div id="explain-loader" class="loader" style="margin:20px auto;"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const settingsIcon = document.getElementById('settings-icon');
+    const settingsPanel = document.getElementById('settings-panel');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+    const generateBtn = document.getElementById('generate-btn');
+    const topicInput = document.getElementById('topic-input');
+    const roadmapContainer = document.getElementById('roadmap-container');
+    const apiKeyInput = document.getElementById('api-key-input');
+    const modelSelector = document.getElementById('model-selector');
+    const papersToggle = document.getElementById('papers-toggle');
+    const browseBtn = document.getElementById('browse-btn');
+
+    const taxonomyModal = document.getElementById('taxonomy-modal');
+    const taxonomyCloseBtn = document.getElementById('taxonomy-close-btn');
+    const taxonomySearch = document.getElementById('taxonomy-search');
+    const taxonomyContent = document.getElementById('taxonomy-content');
+
+    const explainModal = document.getElementById('explain-modal');
+    const explainCloseBtn = document.getElementById('explain-close-btn');
+    const explainTitle = document.getElementById('explain-title');
+    const explainContext = document.getElementById('explain-context');
+    const explainContent = document.getElementById('explain-content');
+    const explainLoader = document.getElementById('explain-loader');
+
+    let fullRoadmapJson = {};
+    let explanationCache = {};
+
+    settingsIcon.addEventListener('click', () => settingsPanel.classList.add('open'));
+    closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.remove('open'));
+    explainCloseBtn.addEventListener('click', () => { explainModal.style.display = 'none'; });
+    explainModal.addEventListener('click', (e) => { if (e.target === explainModal) explainModal.style.display = 'none'; });
+
+    taxonomyCloseBtn.addEventListener('click', () => { taxonomyModal.style.display = 'none'; });
+    taxonomyModal.addEventListener('click', (e) => { if (e.target === taxonomyModal) taxonomyModal.style.display = 'none'; });
+
+    // --- Exhaustive Pre-populated L1 Academic Fields ---
+    const L1_CATEGORIES = [
+        {cat:"Formal Sciences", fields:[
+            "Mathematics","Computer Science","Logic","Statistics","Systems Theory","Information Theory",
+            "Game Theory","Theoretical Computer Science","Set Theory","Category Theory","Proof Theory",
+            "Model Theory","Computability Theory","Complexity Theory","Cryptography","Numerical Analysis",
+            "Operations Research","Decision Theory","Cybernetics","Formal Languages","Automata Theory"
+        ]},
+        {cat:"Physical Sciences", fields:[
+            "Physics","Chemistry","Astronomy","Earth Science","Atmospheric Science","Oceanography",
+            "Geology","Materials Science","Optics","Thermodynamics","Electromagnetism","Quantum Mechanics",
+            "Relativity","Particle Physics","Nuclear Physics","Astrophysics","Cosmology","Planetary Science",
+            "Physical Chemistry","Analytical Chemistry","Organic Chemistry","Inorganic Chemistry",
+            "Polymer Chemistry","Geochemistry","Petrology","Mineralogy","Seismology","Meteorology",
+            "Climatology","Hydrology","Volcanology","Space Science","Nanotechnology"
+        ]},
+        {cat:"Life Sciences", fields:[
+            "Biology","Neuroscience","Biochemistry","Genetics","Ecology","Microbiology","Botany","Zoology",
+            "Molecular Biology","Cell Biology","Developmental Biology","Evolutionary Biology",
+            "Structural Biology","Systems Biology","Synthetic Biology","Bioinformatics","Biophysics",
+            "Immunology","Virology","Parasitology","Entomology","Mycology","Marine Biology","Paleontology",
+            "Anatomy","Physiology","Endocrinology","Toxicology","Pharmacology","Biomechanics",
+            "Conservation Biology","Ethology","Astrobiology","Pathology","Epidemiology"
+        ]},
+        {cat:"Social Sciences", fields:[
+            "Economics","Psychology","Sociology","Political Science","Anthropology","Archaeology",
+            "Geography","Linguistics","Law","Education","Communication Studies","Public Policy",
+            "International Relations","Criminology","Social Work","Demography","Gender Studies",
+            "Media Studies","Urban Studies","Development Studies","Peace and Conflict Studies",
+            "Human Geography","Cultural Anthropology","Social Psychology","Cognitive Science",
+            "Behavioral Economics","Organizational Behavior","Public Administration","Criminal Justice"
+        ]},
+        {cat:"Humanities", fields:[
+            "Philosophy","History","Literature","Art History","Music","Theology","Classics",
+            "Religious Studies","Cultural Studies","Film Studies","Rhetoric","Comparative Literature",
+            "Theater","Creative Writing","Ethics","Metaphysics","Epistemology","Aesthetics","Phenomenology",
+            "Hermeneutics","Philology","Museology","Digital Humanities","Translation Studies",
+            "Musicology","Ethnomusicology","Literary Theory","Postcolonial Studies","Mythology",
+            "Folklore","Intellectual History","History of Science","Biblical Studies","Buddhist Studies"
+        ]},
+        {cat:"Arts", fields:[
+            "Visual Arts","Painting","Sculpture","Photography","Architecture","Graphic Design",
+            "Industrial Design","Fashion Design","Interior Design","Animation","Illustration",
+            "Printmaking","Ceramics","Textile Arts","Jewelry Design","Game Design","Sound Art",
+            "Video Art","Performance Art","Installation Art","Landscape Architecture","Urban Design",
+            "Calligraphy","Digital Art","Comics Studies","Choreography","Dance","Opera","Conducting"
+        ]},
+        {cat:"Engineering", fields:[
+            "Mechanical Engineering","Electrical Engineering","Civil Engineering","Chemical Engineering",
+            "Aerospace Engineering","Biomedical Engineering","Computer Engineering","Environmental Engineering",
+            "Industrial Engineering","Nuclear Engineering","Petroleum Engineering","Software Engineering",
+            "Systems Engineering","Mining Engineering","Marine Engineering","Agricultural Engineering",
+            "Structural Engineering","Transportation Engineering","Geotechnical Engineering",
+            "Robotics","Mechatronics","Telecommunications Engineering","Food Engineering",
+            "Acoustical Engineering","Photonics","Hydraulic Engineering","Safety Engineering"
+        ]},
+        {cat:"Health Sciences", fields:[
+            "Medicine","Nursing","Public Health","Dentistry","Veterinary Medicine","Pharmacy",
+            "Physical Therapy","Occupational Therapy","Speech Pathology","Audiology","Optometry",
+            "Chiropractic","Podiatry","Nutrition","Dietetics","Radiography","Anesthesiology",
+            "Surgery","Pediatrics","Geriatrics","Psychiatry","Oncology","Cardiology","Neurology",
+            "Dermatology","Obstetrics","Gynecology","Emergency Medicine","Sports Medicine",
+            "Rehabilitation Medicine","Palliative Care","Tropical Medicine","Medical Informatics"
+        ]},
+        {cat:"Business & Management", fields:[
+            "Finance","Accounting","Marketing","Management","Entrepreneurship","Business Analytics",
+            "Supply Chain Management","Human Resources","Real Estate","Hospitality Management",
+            "Tourism Management","Insurance","Actuarial Science","Risk Management","Investment Banking",
+            "Corporate Finance","Behavioral Finance","Financial Engineering","International Business",
+            "Strategic Management","Innovation Management","Project Management","Brand Management",
+            "Digital Marketing","Consumer Behavior","Business Ethics","Organizational Theory",
+            "Nonprofit Management","Agribusiness"
+        ]},
+        {cat:"Interdisciplinary", fields:[
+            "Artificial Intelligence","Data Science","Machine Learning","Robotics","Bioengineering",
+            "Environmental Studies","Sustainability Science","Climate Science","Disaster Management",
+            "Energy Studies","Food Science","Forensic Science","Gerontology","Global Health",
+            "Information Science","Library Science","Military Science","Museum Studies","Science Education",
+            "Technology Policy","Computational Linguistics","Human-Computer Interaction","Biogeochemistry",
+            "Remote Sensing","Geographic Information Systems","Evolutionary Psychology","Psycholinguistics",
+            "Sociobiology","Neurosymbolic Computing","Cybernetics","Biomechatronics","Bioethics",
+            "Neuroethics","Agroecology","Ecotoxicology","One Health"
+        ]}
+    ];
+
+    let taxonomyL2Cache = {};
+    let taxonomyExpanded = {};
+    let taxonomyLoading = {};
+
+    async function loadL2Fields(l1Name) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return;
+        if (taxonomyL2Cache[l1Name] || taxonomyLoading[l1Name]) return;
+
+        taxonomyLoading[l1Name] = true;
+        let fullText = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    system: "List academic subfields. Return ONLY valid JSON array, no markdown.",
+                    messages: [{ role: 'user', content: `List 10-25 specific L2 subfields/areas within "${l1Name}". These should be standard academic sub-disciplines that someone could study and generate a reading roadmap for. Return: ["Subfield Name", ...]` }],
+                    max_tokens: 2048, stream: true,
+                }),
+            });
+            if (!res.ok) throw new Error('API Error');
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) fullText += event.data.delta.text;
+            }
+            let cleaned = fullText.replace(/```(?:json)?\s*/gi, '').replace(/```\s*$/g, '').trim();
+            let start = cleaned.indexOf('['); if (start === -1) start = cleaned.indexOf('{');
+            if (start !== -1) cleaned = cleaned.slice(start);
+            const data = JSON.parse(cleaned);
+            taxonomyL2Cache[l1Name] = Array.isArray(data) ? data.map(s => typeof s === 'string' ? {name:s} : s) : (data.l2 || data.fields || []);
+        } catch (e) {
+            taxonomyL2Cache[l1Name] = [{name:'(Failed to load — try again)'}];
+        }
+        taxonomyLoading[l1Name] = false;
+        renderTaxonomy(taxonomySearch.value);
+    }
+
+    function renderTaxonomy(filterText) {
+        const f = (filterText || '').toLowerCase().trim();
+        let html = '';
+        L1_CATEGORIES.forEach(cat => {
+            let catHtml = '';
+            cat.fields.forEach(l1Name => {
+                const l1Match = !f || l1Name.toLowerCase().includes(f) || (taxonomyL2Cache[l1Name] || []).some(l2 => (l2.name||l2).toLowerCase().includes(f));
+                if (f && !l1Match) return;
+
+                const isExpanded = taxonomyExpanded[l1Name] || !!f;
+                const l2List = taxonomyL2Cache[l1Name] || [];
+                const isLoading = taxonomyLoading[l1Name];
+                const matchingL2 = f ? l2List.filter(l2 => (l2.name||l2).toLowerCase().includes(f)) : l2List;
+
+                catHtml += `<div style="margin-bottom:4px;">
+                  <div class="tax-l1" data-l1="${escapeHtml(l1Name)}" style="padding:10px 14px;background:#2c3e50;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #8e44ad;">
+                    <span style="font-family:Georgia,serif;font-size:16px;color:#ecf0f1;font-weight:bold;">${escapeHtml(l1Name)}</span>
+                    <span style="color:#8e44ad;font-size:12px;">${isLoading ? 'loading...' : l2List.length + ' subfields'} ${isExpanded ? '▾' : '▸'}</span>
+                  </div>`;
+
+                if (isExpanded) {
+                    if (isLoading) {
+                        catHtml += `<div style="margin-left:20px;padding:10px;color:#bdc3c7;">Loading subfields...</div>`;
+                    } else if (matchingL2.length) {
+                        catHtml += `<div class="tax-l2-list" style="margin-left:20px;">`;
+                        matchingL2.forEach(l2 => {
+                            const l2n = typeof l2 === 'string' ? l2 : l2.name;
+                            catHtml += `<div class="tax-l2" data-l1="${escapeHtml(l1Name)}" data-l2="${escapeHtml(l2n)}" style="padding:8px 14px;margin:2px 0;background:#1e2a38;border-radius:4px;cursor:pointer;font-size:14px;color:#bdc3c7;border-left:3px solid transparent;">
+                              ${escapeHtml(l1Name)} → <span style="color:#e67e22;">${escapeHtml(l2n)}</span>
+                            </div>`;
+                        });
+                        catHtml += `</div>`;
+                    } else {
+                        catHtml += `<div style="margin-left:20px;padding:10px;color:#7f8c8d;font-size:13px;">No subfields loaded. Click to retry.</div>`;
+                    }
+                }
+                catHtml += `</div>`;
+            });
+
+            if (catHtml) {
+                html += `<div style="margin-bottom:16px;">
+                  <div style="font-size:12px;color:#7f8c8d;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-left:4px;">${escapeHtml(cat.cat)}</div>
+                  ${catHtml}
+                </div>`;
+            }
+        });
+
+        taxonomyContent.innerHTML = html || '<div style="color:#bdc3c7;text-align:center;padding:20px;">No matching fields.</div>';
+
+        // L1 click: expand + load L2 if needed
+        taxonomyContent.querySelectorAll('.tax-l1').forEach(el => {
+            const l1Name = el.getAttribute('data-l1');
+            el.addEventListener('click', () => {
+                taxonomyExpanded[l1Name] = !taxonomyExpanded[l1Name];
+                if (taxonomyExpanded[l1Name] && !taxonomyL2Cache[l1Name] && !taxonomyLoading[l1Name]) {
+                    loadL2Fields(l1Name);
+                }
+                renderTaxonomy(taxonomySearch.value);
+            });
+            el.addEventListener('mouseenter', () => { el.style.background = '#34495e'; });
+            el.addEventListener('mouseleave', () => { el.style.background = '#2c3e50'; });
+            // Double-click to select L1 directly
+            el.addEventListener('dblclick', () => {
+                topicInput.value = l1Name;
+                taxonomyModal.style.display = 'none';
+                if (apiKeyInput.value.trim()) generateBtn.click();
+            });
+        });
+
+        // L2 click to select
+        taxonomyContent.querySelectorAll('.tax-l2').forEach(el => {
+            el.addEventListener('click', () => {
+                const l2Name = el.getAttribute('data-l2');
+                topicInput.value = l2Name;
+                taxonomyModal.style.display = 'none';
+                if (apiKeyInput.value.trim()) generateBtn.click();
+            });
+            el.addEventListener('mouseenter', () => { el.style.borderLeft = '3px solid #e67e22'; el.style.background = '#2c3e50'; });
+            el.addEventListener('mouseleave', () => { el.style.borderLeft = '3px solid transparent'; el.style.background = '#1e2a38'; });
+        });
+    }
+
+    browseBtn.addEventListener('click', () => {
+        taxonomyModal.style.display = 'flex';
+        if (!taxonomyContent.innerHTML || taxonomyContent.innerHTML.includes('Loading academic fields')) {
+            renderTaxonomy();
+        }
+    });
+
+    let taxonomySearchTimer;
+    taxonomySearch.addEventListener('input', (e) => {
+        clearTimeout(taxonomySearchTimer);
+        taxonomySearchTimer = setTimeout(() => renderTaxonomy(e.target.value), 100);
+    });
+
+    // --- SSE Parser ---
+    async function* sseParser(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '', currentEvent = '', currentData = '';
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let idx;
+            while ((idx = buffer.indexOf('\n')) !== -1) {
+                const line = buffer.slice(0, idx).trimEnd();
+                buffer = buffer.slice(idx + 1);
+                if (line.startsWith('event: ')) currentEvent = line.slice(7).trim();
+                else if (line.startsWith('data: ')) currentData = line.slice(6).trim();
+                else if (line === '' && currentData) {
+                    try { yield { event: currentEvent, data: JSON.parse(currentData) }; } catch (e) {}
+                    currentEvent = ''; currentData = '';
+                }
+            }
+        }
+        if (currentData) try { yield { event: currentEvent, data: JSON.parse(currentData) }; } catch (e) {}
+    }
+
+    // --- Extract JSON with truncation recovery ---
+    function extractJSON(text) {
+        if (!text) throw new Error('No text to parse');
+
+        // Extract content from code blocks — keep only the largest one
+        const codeBlocks = [...text.matchAll(/```(?:json)?\s*\n?([\s\S]*?)```/g)];
+        let cleaned = text;
+        if (codeBlocks.length) {
+            let largest = codeBlocks.reduce((a, b) => (b[1].length > a[1].length ? b : a), codeBlocks[0]);
+            cleaned = largest[1];
+        }
+        cleaned = cleaned.replace(/```(?:json)?\s*/gi, '').replace(/```\s*$/g, '').trim();
+
+        // Find outermost JSON object — skip past any explanation text
+        // Scan for { that starts a valid-looking JSON object (followed by " key)
+        let bestStart = cleaned.indexOf('{"');
+        if (bestStart === -1) bestStart = cleaned.indexOf('{');
+        if (bestStart === -1) throw new Error('No JSON object found');
+        cleaned = cleaned.slice(bestStart);
+
+        // Try 1: direct parse
+        try { return JSON.parse(cleaned); } catch (e) {}
+
+        // Try 2: balance brackets on full string
+        let balanced = cleaned;
+        let ob = (balanced.match(/\{/g)||[]).length, cb = (balanced.match(/\}/g)||[]).length;
+        let oa = (balanced.match(/\[/g)||[]).length, ca = (balanced.match(/\]/g)||[]).length;
+        for (let i = 0; i < ob - cb; i++) balanced += '}';
+        for (let i = 0; i < oa - ca; i++) balanced += ']';
+        try { return JSON.parse(balanced); } catch (e) {}
+
+        // Try 3: strategic truncation — limit to ~100 attempts for performance
+        // Sample bracket positions evenly, plus positions near the end
+        let candidates = [cleaned.length];
+        let bracketPositions = [];
+        for (let i = 0; i < cleaned.length; i++) {
+            if (cleaned[i] === '}' || cleaned[i] === ']') bracketPositions.push(i + 1);
+        }
+        // Keep up to 80 bracket positions, evenly distributed + last 20
+        if (bracketPositions.length > 80) {
+            let step = Math.floor(bracketPositions.length / 60);
+            for (let j = 0; j < bracketPositions.length; j += Math.max(1, step)) candidates.push(bracketPositions[j]);
+            for (let j = Math.max(0, bracketPositions.length - 20); j < bracketPositions.length; j++) candidates.push(bracketPositions[j]);
+        } else {
+            candidates.push(...bracketPositions);
+        }
+        // Add every 100 chars as safety net
+        for (let i = Math.floor(cleaned.length / 100) * 100; i > 0; i -= 100) candidates.push(i);
+
+        let seen = new Set();
+        let sorted = [...candidates].sort((a, b) => b - a);
+        for (const cut of sorted) {
+            if (seen.has(cut) || cut < 10) continue;
+            seen.add(cut);
+            let candidate = cleaned.slice(0, cut);
+            // Fast quote check: count quotes in last 2000 chars only
+            let checkRegion = candidate.slice(-2000);
+            if ((checkRegion.match(/"/g)||[]).length % 2 !== 0) continue;
+            ob = (candidate.match(/\{/g)||[]).length; cb = (candidate.match(/\}/g)||[]).length;
+            oa = (candidate.match(/\[/g)||[]).length; ca = (candidate.match(/\]/g)||[]).length;
+            // Don't try if we're way off — more than 5 unbalanced
+            if (Math.abs(ob - cb) > 5 || Math.abs(oa - ca) > 5) continue;
+            for (let i = 0; i < ob - cb; i++) candidate += '}';
+            for (let i = 0; i < oa - ca; i++) candidate += ']';
+            try { return JSON.parse(candidate); } catch (e) { continue; }
+        }
+
+        throw new Error('Could not extract valid JSON');
+    }
+
+    // --- Explain Concept ---
+    async function explainConcept(topic, concept, contextText) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return;
+        const cacheKey = topic + '::' + concept;
+        if (explanationCache[cacheKey]) {
+            explainContent.textContent = explanationCache[cacheKey];
+            explainLoader.style.display = 'none';
+            return;
+        }
+        explainContent.textContent = '';
+        explainLoader.style.display = 'block';
+        let explanation = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    system: "You explain complex academic concepts at a high school level. Use simple language, analogies, concrete examples. 3-5 paragraphs.",
+                    messages: [{ role: 'user', content: `Explain "${concept}" from "${topic}" (${contextText}) for high school. Give: a simple analogy, a clear definition with example, why it matters.` }],
+                    max_tokens: 1024, stream: true,
+                }),
+            });
+            if (!res.ok) throw new Error('API Error');
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) {
+                    explanation += event.data.delta.text;
+                    explainContent.textContent = explanation;
+                }
+            }
+            explanationCache[cacheKey] = explanation;
+        } catch (e) { explainContent.textContent = 'Could not load explanation.'; }
+        finally { explainLoader.style.display = 'none'; }
+    }
+
+    // --- Explain entire level ---
+    async function explainLevel(topic, levelName, levelDesc, concepts, books, prevLevelName) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return;
+        const cacheKey = 'LEVEL::' + topic + '::' + levelName;
+        if (explanationCache[cacheKey]) {
+            explainContent.textContent = explanationCache[cacheKey];
+            explainLoader.style.display = 'none';
+            return;
+        }
+        explainContent.textContent = '';
+        explainLoader.style.display = 'block';
+        let explanation = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    system: "You explain academic learning stages at a high school level. Use simple language, analogies, concrete examples. Be thorough.",
+                    messages: [{ role: 'user', content: `Explain the academic learning stage "${levelName}" from the field "${topic}".
+
+This level builds on: ${prevLevelName || 'basic knowledge'}.
+This level covers: ${levelDesc}
+Key concepts studied: ${(concepts || []).slice(0, 10).join(', ')}
+Key books studied: ${(books || []).slice(0, 3).map(b => b.title + ' by ' + b.author).join('; ')}
+
+Write 4-6 paragraphs (high school reading level):
+1. What this stage is about — a simple overview with an analogy
+2. The core skills and knowledge you gain at this stage
+3. How it builds on the previous stage and why this order matters
+4. What makes this stage exciting or important in the overall journey
+5. A concrete example of something you'd understand or do after completing it
+6. What comes next after this stage` }],
+                    max_tokens: 2048, stream: true,
+                }),
+            });
+            if (!res.ok) throw new Error('API Error');
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) {
+                    explanation += event.data.delta.text;
+                    explainContent.textContent = explanation;
+                }
+            }
+            explanationCache[cacheKey] = explanation;
+        } catch (e) { explainContent.textContent = 'Could not load explanation.'; }
+        finally { explainLoader.style.display = 'none'; }
+    }
+
+    // --- Explain a book/work ---
+    async function explainBook(bookTitle, bookAuthor, bookYear, bookWhy, bookChapters, topic, levelName) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return;
+        const cacheKey = 'BOOK::' + bookTitle + '::' + bookAuthor;
+        if (explanationCache[cacheKey]) {
+            explainContent.textContent = explanationCache[cacheKey];
+            explainLoader.style.display = 'none';
+            return;
+        }
+        explainContent.textContent = '';
+        explainLoader.style.display = 'block';
+        let explanation = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    system: "You explain academic books at a high school level. Use simple language, engaging examples, clear explanations.",
+                    messages: [{ role: 'user', content: `Explain the academic book "${bookTitle}" (${bookYear}) by ${bookAuthor}.
+
+This book is read at the "${levelName}" stage of "${topic}".
+Why it's recommended: ${bookWhy}
+Key chapters/topics: ${bookChapters}
+
+Write 4-6 paragraphs (high school reading level):
+1. What this book is about — a simple overview with a concrete analogy or story hook
+2. The main ideas and arguments — what you learn from reading it
+3. Why it's considered important or influential in this field
+4. How it fits into the learning journey at the "${levelName}" stage — what prerequisite knowledge helps, and what it prepares you for
+5. A specific example or insight from the book that makes it memorable
+6. How to approach reading it — what to focus on, whether to skip any parts, what companion resources help` }],
+                    max_tokens: 2048, stream: true,
+                }),
+            });
+            if (!res.ok) throw new Error('API Error');
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) {
+                    explanation += event.data.delta.text;
+                    explainContent.textContent = explanation;
+                }
+            }
+            explanationCache[cacheKey] = explanation;
+        } catch (e) { explainContent.textContent = 'Could not load explanation.'; }
+        finally { explainLoader.style.display = 'none'; }
+    }
+
+    // --- Generate (initial) ---
+    generateBtn.addEventListener('click', async () => {
+        const topic = topicInput.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+        if (!topic) { alert('Enter a topic.'); return; }
+        if (!apiKey) { alert('Enter your API key in Settings.'); settingsPanel.classList.add('open'); return; }
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+        roadmapContainer.innerHTML = '<div class="loader"></div><div id="stream-status" style="text-align:center;color:#bdc3c7;margin-top:10px;font-size:14px;">Generating roadmap...</div>';
+        roadmapContainer.classList.add('visible');
+        await generateRoadmap(topic, apiKey);
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Roadmap';
+    });
+
+    // --- Core generation function (reusable for drill) ---
+    async function generateRoadmap(topic, apiKey) {
+        let fullText = '';
+        const statusEl = document.getElementById('stream-status');
+        let lastStatusUpdate = 0;
+        try {
+            const papers = papersToggle.checked;
+            const userPrompt = `Generate a concise academic reading roadmap for mastering: "${topic}".
+
+Create 6-10 levels covering absolute beginner to research frontier. Use real academic/career stage names adapted to THIS field, such as:
+"High School / Intro", "Undergraduate Foundations", "Upper Undergrad Core", "Graduate Foundations", "Graduate Specialization", "Doctoral Seminar", "Post-Doctoral Research", "Research Frontier", "Specialist / Expert", "Master Practitioner"
+
+For EACH level, include "level_summary" (1-2 paragraphs, high-school reading level) explaining what this level achieves and how it builds on the previous level.
+
+CRITICAL LIMITS (do NOT exceed): 2-3 books per level total. 8-10 key concepts per level. 5-8 specializations at top level. ${papers ? '2-3 classic papers.' : 'No papers.'} Every book needs why/chapters/google_scholar_query/amazon_query. Every level needs milestone. Use "name" not "title". Return ONLY valid JSON — no text outside the JSON object. No markdown wrapping.
+
+SCHEMA:
+{"topic":"","overview":"","estimated_time":"","levels":[{"level":1,"name":"","description":"","duration":"","level_summary":"","books":[{"title":"","author":"","year":2024,"why":"","chapters":"","google_scholar_query":"","amazon_query":""}],"key_concepts":[""],"milestone":""}],"specializations":[{"name":"","description":"","prerequisite_level":3}],"classic_papers":[{"title":"","author":"","year":2024,"why_seminal":"","scholar_query":""}]}`;
+
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: modelSelector.value,
+                    system: "Expert academic librarian. Generate CONCISE reading roadmaps. Keep output compact. Return ONLY the JSON object, nothing else.",
+                    messages: [{ role: 'user', content: userPrompt }],
+                    max_tokens: 8192, stream: true,
+                }),
+            });
+            if (!res.ok) { let e = ''; try { e = await res.text(); } catch(ex) {} throw new Error(`API Error (${res.status}): ${res.statusText}\n${e}`); }
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) {
+                    fullText += event.data.delta.text;
+                    const now = Date.now();
+                    if (now - lastStatusUpdate > 500) {
+                        if (statusEl) statusEl.textContent = `Received ${fullText.length.toLocaleString()} chars... parsing response`;
+                        lastStatusUpdate = now;
+                    }
+                }
+            }
+            if (statusEl) statusEl.textContent = `Parsing ${fullText.length.toLocaleString()} chars of JSON...`;
+            await new Promise(r => setTimeout(r, 50)); // let DOM update
+            const json = extractJSON(fullText);
+            fullRoadmapJson = json;
+            renderRoadmap(json, topic);
+        } catch (error) {
+            if (error.message.includes('API Error')) {
+                roadmapContainer.innerHTML = `<div style="background:#3d1f1f;border:2px solid #e74c3c;border-radius:8px;padding:20px;color:#ecf0f1;"><h3 style="color:#e74c3c;margin:0 0 10px 0;">API Error</h3><p>${escapeHtml(error.message)}</p><button id="retry-btn" style="background:#e67e22;color:white;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;font-size:16px;">Retry</button></div>`;
+                document.getElementById('retry-btn').onclick = () => generateBtn.click();
+            } else {
+                const d = document.createElement('div');
+                const errMsg = error.message || '';
+                const tail = fullText ? fullText.slice(-500) : '';
+                d.style.cssText = 'background:#3d1f1f;border:2px solid #e74c3c;border-radius:8px;padding:20px;color:#ecf0f1;';
+                d.innerHTML = `<h3 style="color:#e74c3c;margin:0 0 5px 0;">Parse Error: ${escapeHtml(errMsg)}</h3><p style="color:#bdc3c7;margin:0 0 10px 0;">Raw: ${fullText.length} chars</p><p style="color:#e67e22;font-size:12px;margin:8px 0 4px 0;">Last 500 chars:</p><pre style="background:#1a1a2e;color:#f0f0f0;padding:15px;border-radius:4px;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto;font-family:monospace;border:1px solid #444;">${escapeHtml(tail)}</pre><button id="retry-btn" style="background:#e67e22;color:white;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;font-size:16px;margin-top:10px;">Retry</button>`;
+                roadmapContainer.innerHTML = '';
+                roadmapContainer.appendChild(d);
+                document.getElementById('retry-btn').onclick = () => generateBtn.click();
+            }
+        }
+    }
+
+    function escapeHtml(u) { return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+    function normalizeRoadmap(data) {
+        data.overview = data.overview || data.description || '';
+        data.estimated_time = data.estimated_time || data.estimated_time_to_mastery || data.total_duration || 'Varies';
+        if (data.levels) data.levels.forEach(l => {
+            l.name = l.name || l.title || '';
+            l.duration = l.duration || (l.duration_weeks ? l.duration_weeks + ' weeks' : '');
+            l.milestone = l.milestone || l.milestones || '';
+            l.level_summary = l.level_summary || l.summary || '';
+            if (l.papers) {
+                if (!data.classic_papers) data.classic_papers = [];
+                l.papers.forEach(p => data.classic_papers.push({title:p.title||'',author:p.author||'',year:p.year||0,why_seminal:p.why_seminal||p.significance||'',scholar_query:p.scholar_query||(p.title?p.title+' '+p.author:'')}));
+                delete l.papers;
+            }
+            if (l.books) l.books.forEach(b => { b.why=b.why||b.reason||''; b.chapters=b.chapters||b.focus||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); });
+        });
+        if (data.specializations) data.specializations.forEach(s => { if(s.books) s.books.forEach(b => { b.why=b.why||''; b.google_scholar_query=b.google_scholar_query||(b.title+' '+b.author); b.amazon_query=b.amazon_query||(b.title+' '+b.author); }); });
+        if (data.classic_papers) data.classic_papers.forEach(p => { p.why_seminal=p.why_seminal||p.significance||''; p.scholar_query=p.scholar_query||(p.title+' '+p.author); });
+        if (!data.specializations) data.specializations = [];
+        if (!data.classic_papers) data.classic_papers = [];
+        return data;
+    }
+
+    // --- Render roadmap ---
+    function renderRoadmap(data, rootTopic) {
+        data = normalizeRoadmap(data);
+        const container = roadmapContainer;
+
+        // --- Completeness check panel (hidden by default) ---
+        let html = `<div id="completeness-report" style="display:none;background:#1e2a38;border:2px solid #f1c40f;border-radius:8px;padding:20px;margin-bottom:20px;"></div>`;
+
+        html += `<h2 style="font-family:Georgia,serif;color:#f1c40f;font-size:28px;">${escapeHtml(data.topic)}</h2>`;
+        html += `<p><em>${escapeHtml(data.overview)}</em></p>`;
+        html += `<p><strong>Estimated Time:</strong> ${escapeHtml(data.estimated_time)}</p>`;
+        html += `<div style="display:flex;gap:10px;justify-content:center;margin:20px 0;flex-wrap:wrap;">
+          <button id="check-completeness-btn" style="padding:10px 20px;background:#f1c40f;color:#1a1a2e;border:none;cursor:pointer;border-radius:4px;font-weight:bold;font-size:14px;">Check Completeness</button>
+          <button id="copy-json-btn" style="padding:10px 20px;background:#7f8c8d;color:white;border:none;cursor:pointer;border-radius:4px;">Copy JSON</button>
+        </div>`;
+        container.innerHTML = html;
+
+        // Render levels
+        if (data.levels) data.levels.forEach((l, idx) => {
+            const levelDiv = document.createElement('div');
+            levelDiv.style.cssText = 'background:#2c3e50;border:1px solid #34495e;border-radius:8px;padding:20px;margin-bottom:20px;';
+
+            const prevLevel = idx > 0 ? data.levels[idx - 1].name : 'the absolute basics';
+
+            levelDiv.innerHTML = `
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;flex-wrap:wrap;">
+                <span style="background:#f1c40f;color:#1a1a2e;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:13px;">Level ${l.level}</span>
+                <h3 style="font-family:Georgia,serif;font-size:22px;margin:0;flex-grow:1;">${escapeHtml(l.name)}</h3>
+                <button class="explain-level-btn" data-topic="${escapeHtml(rootTopic)}" data-level="${escapeHtml(l.name)}" data-desc="${escapeHtml(l.description)}" data-concepts="${escapeHtml(JSON.stringify(l.key_concepts || []))}" data-books="${escapeHtml(JSON.stringify(l.books || []))}" data-prev="${escapeHtml(prevLevel)}" style="background:linear-gradient(135deg,#f1c40f,#e67e22);color:#1a1a2e;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold;white-space:nowrap;">Explain Level</button>
+              </div>
+              <p>${escapeHtml(l.description)}</p>
+              <p><strong>Duration:</strong> ${escapeHtml(l.duration)}</p>
+
+              <div style="background:linear-gradient(135deg,rgba(241,196,15,0.1),rgba(241,196,15,0.02));border:2px solid #f1c40f;padding:18px;margin:15px 0;border-radius:8px;">
+                <div style="font-size:14px;color:#f1c40f;font-weight:bold;margin-bottom:10px;">What This Level Achieves <span style="font-size:11px;color:#bdc3c7;font-weight:normal;">(builds on: ${escapeHtml(prevLevel)})</span></div>
+                <div style="color:#ecf0f1;line-height:1.8;font-size:14px;">${escapeHtml(l.level_summary || l.summary || '')}</div>
+              </div>
+
+              <h4 style="color:#e67e22;font-family:Georgia,serif;">Key Texts (${l.books.length})</h4>
+              ${l.books.map(b => `<div style="background:#34495e;border-radius:4px;padding:12px;margin-bottom:8px;">
+                <h5 style="font-family:Georgia,serif;font-size:17px;margin:0 0 3px 0;">${escapeHtml(b.title)} (${b.year})</h5>
+                <p style="margin:0 0 3px 0;"><em>${escapeHtml(b.author)}</em></p>
+                <p style="margin:0 0 3px 0;"><strong>Why?</strong> ${escapeHtml(b.why)}</p>
+                <p style="margin:0 0 8px 0;"><strong>Focus:</strong> ${escapeHtml(b.chapters)}</p>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <a style="padding:6px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:13px;display:inline-block;" href="https://scholar.google.com/scholar?q=${encodeURIComponent(b.google_scholar_query)}" target="_blank">Scholar</a>
+                  <a style="padding:6px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:13px;display:inline-block;" href="https://www.amazon.com/s?k=${encodeURIComponent(b.amazon_query)}" target="_blank">Find Book</a>
+                  <button class="explain-book-btn" data-title="${escapeHtml(b.title)}" data-author="${escapeHtml(b.author)}" data-year="${b.year}" data-why="${escapeHtml(b.why)}" data-chapters="${escapeHtml(b.chapters)}" data-topic="${escapeHtml(rootTopic)}" data-level="${escapeHtml(l.name)}" style="background:#f1c40f;color:#1a1a2e;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;">Explain Book</button>
+                </div>
+              </div>`).join('')}
+
+              <h4 style="color:#e67e22;font-family:Georgia,serif;">Key Concepts (${l.key_concepts.length})</h4>
+              <ul style="list-style:none;padding-left:0;">
+              ${l.key_concepts.map(c => `<li style="margin-bottom:6px;padding:6px 10px;background:rgba(52,73,94,0.5);border-radius:4px;border-left:3px solid #e67e22;display:flex;justify-content:space-between;align-items:center;">
+                <span>${escapeHtml(c)}</span>
+                <button class="explain-btn" data-concept="${escapeHtml(c)}" data-topic="${escapeHtml(rootTopic)}" data-context="${escapeHtml(l.name)}" style="background:#f1c40f;color:#1a1a2e;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;white-space:nowrap;margin-left:8px;">Explain</button>
+              </li>`).join('')}
+              </ul>
+
+              <div style="background:rgba(241,196,15,0.1);border-left:3px solid #f1c40f;padding:14px;margin-top:15px;border-radius:0 4px 4px 0;">
+                <span style="font-size:13px;color:#bdc3c7;">Milestone</span><br>
+                <span style="color:#ecf0f1;font-style:italic;">${escapeHtml(l.milestone)}</span>
+              </div>`;
+
+            container.appendChild(levelDiv);
+        });
+
+        // Render specializations
+        if (data.specializations && data.specializations.length) {
+            const specDiv = document.createElement('div');
+            specDiv.style.cssText = 'margin-top:25px;';
+            specDiv.innerHTML = `<h3 style="font-family:Georgia,serif;color:#f1c40f;">Specializations (${data.specializations.length})</h3>`;
+            data.specializations.forEach(s => {
+                specDiv.innerHTML += `<div style="background:#2c3e50;border:1px solid #34495e;border-radius:8px;padding:18px;margin-bottom:12px;">
+                  <h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.description)}</p>
+                  <p><small>Prerequisite: Level ${s.prerequisite_level}</small></p>
+                </div>`;
+            });
+            container.appendChild(specDiv);
+        }
+
+        // Render classic papers
+        if (data.classic_papers && data.classic_papers.length) {
+            const papersDiv = document.createElement('div');
+            papersDiv.style.cssText = 'margin-top:25px;';
+            papersDiv.innerHTML = `<h3 style="font-family:Georgia,serif;color:#f1c40f;">Classic Papers (${data.classic_papers.length})</h3>`;
+            data.classic_papers.forEach(p => {
+                papersDiv.innerHTML += `<div style="background:#2c3e50;border:1px solid #34495e;border-radius:8px;padding:18px;margin-bottom:12px;">
+                  <h4>${escapeHtml(p.title)} (${p.year})</h4><p><em>${escapeHtml(p.author)}</em></p>
+                  <p><strong>Why seminal:</strong> ${escapeHtml(p.why_seminal)}</p>
+                  <a style="padding:6px 10px;background:#e67e22;color:#ecf0f1;text-decoration:none;border-radius:4px;font-size:13px;display:inline-block;" href="https://scholar.google.com/scholar?q=${encodeURIComponent(p.scholar_query)}" target="_blank">Find on Scholar</a>
+                </div>`;
+            });
+            container.appendChild(papersDiv);
+        }
+
+        // Attach explain-level buttons
+        container.querySelectorAll('.explain-level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                explainTitle.textContent = 'Level: ' + btn.getAttribute('data-level');
+                explainContext.textContent = btn.getAttribute('data-topic') + ' — builds on: ' + btn.getAttribute('data-prev');
+                explainContent.textContent = '';
+                explainLoader.style.display = 'block';
+                explainModal.style.display = 'flex';
+                explainLevel(
+                    btn.getAttribute('data-topic'),
+                    btn.getAttribute('data-level'),
+                    btn.getAttribute('data-desc'),
+                    JSON.parse(btn.getAttribute('data-concepts') || '[]'),
+                    JSON.parse(btn.getAttribute('data-books') || '[]'),
+                    btn.getAttribute('data-prev')
+                );
+            });
+        });
+
+        // Attach explain-book buttons
+        container.querySelectorAll('.explain-book-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                explainTitle.textContent = 'Book: ' + btn.getAttribute('data-title');
+                explainContext.textContent = btn.getAttribute('data-author') + ' (' + btn.getAttribute('data-year') + ') | Level: ' + btn.getAttribute('data-level');
+                explainContent.textContent = '';
+                explainLoader.style.display = 'block';
+                explainModal.style.display = 'flex';
+                explainBook(
+                    btn.getAttribute('data-title'),
+                    btn.getAttribute('data-author'),
+                    parseInt(btn.getAttribute('data-year')),
+                    btn.getAttribute('data-why'),
+                    btn.getAttribute('data-chapters'),
+                    btn.getAttribute('data-topic'),
+                    btn.getAttribute('data-level')
+                );
+            });
+        });
+
+        // Attach explain buttons
+        container.querySelectorAll('.explain-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                explainTitle.textContent = btn.getAttribute('data-concept');
+                explainContext.textContent = btn.getAttribute('data-topic') + ' — ' + btn.getAttribute('data-context');
+                explainContent.textContent = '';
+                explainLoader.style.display = 'block';
+                explainModal.style.display = 'flex';
+                explainConcept(btn.getAttribute('data-topic'), btn.getAttribute('data-concept'), btn.getAttribute('data-context'));
+            });
+        });
+
+        // Check Completeness button
+        const checkBtn = container.querySelector('#check-completeness-btn');
+        if (checkBtn) checkBtn.onclick = () => checkCompleteness(data.topic);
+
+        // Copy JSON button
+        const copyBtn = container.querySelector('#copy-json-btn');
+        if (copyBtn) copyBtn.onclick = () => { navigator.clipboard.writeText(JSON.stringify(fullRoadmapJson,null,2)); alert('Copied!'); };
+    }
+
+    // --- Completeness Audit ---
+    async function checkCompleteness(topic) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) { alert('Enter your API key in Settings.'); return; }
+
+        const reportDiv = document.getElementById('completeness-report');
+        reportDiv.style.display = 'block';
+        reportDiv.innerHTML = '<div class="loader"></div><div style="text-align:center;color:#bdc3c7;margin-top:10px;">Auditing roadmap completeness...</div>';
+
+        let fullText = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: modelSelector.value,
+                    system: "You audit academic roadmaps. For each level, list EXACTLY what is missing. Return ONLY valid JSON.",
+                    messages: [{ role: 'user', content: `Audit this roadmap for "${topic}". For EACH level, identify exactly what is missing.
+
+ROADMAP:
+${JSON.stringify(fullRoadmapJson)}
+
+Return JSON:
+{"status":"complete"|"incomplete","gap_analysis":"","overall_score":"X/10",
+"per_level":[{"level":1,"level_name":"","status":"ok"|"weak","missing_books":[{"title":"","author":"","year":2024,"why":"","chapters":""}],"missing_concepts":[""],"needs_summary_fix":false,"issue_detail":""}],
+"missing_levels_to_insert":[{"after_level":1,"name":"","description":"","why_needed":""}],
+"missing_specializations":[{"name":"","description":"","prerequisite_level":1}],
+"suggestions":[""]}` }],
+                    max_tokens: 8192, stream: true,
+                }),
+            });
+            if (!res.ok) throw new Error('API Error');
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) fullText += event.data.delta.text;
+            }
+            const report = extractJSON(fullText);
+            window._lastAuditReport = report;
+            showCompletenessReport(report);
+        } catch (e) {
+            reportDiv.innerHTML = `<div style="color:#e74c3c;">Completeness check failed: ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
+    function showCompletenessReport(report) {
+        const reportDiv = document.getElementById('completeness-report');
+        const statusColor = report.status === 'complete' ? '#2ecc71' : '#e67e22';
+        const statusIcon = report.status === 'complete' ? 'PASS' : 'NEEDS WORK';
+        const hasIssues = report.status !== 'complete';
+        const totalIssues = (report.per_level || []).filter(l => l.status !== 'ok').length + (report.missing_levels_to_insert || []).length;
+
+        let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <h3 style="font-family:Georgia,serif;color:#f1c40f;margin:0;">Completeness Audit</h3>
+          <span style="background:${statusColor};color:white;padding:4px 16px;border-radius:20px;font-weight:bold;font-size:14px;">${statusIcon} — ${escapeHtml(report.overall_score)}</span>
+        </div>`;
+
+        if (report.gap_analysis) html += `<p style="color:#ecf0f1;line-height:1.7;margin-bottom:12px;">${escapeHtml(report.gap_analysis)}</p>`;
+
+        // Per-level details
+        if (report.per_level && report.per_level.length) {
+            html += `<div style="margin-bottom:12px;"><strong style="color:#f1c40f;font-size:15px;">Per-Level Breakdown</strong>`;
+            report.per_level.forEach(l => {
+                if (l.status === 'ok') {
+                    html += `<div style="background:#1a2e1a;padding:8px 12px;margin:4px 0;border-radius:4px;color:#2ecc71;font-size:13px;">L${l.level} ${escapeHtml(l.level_name)} — OK</div>`;
+                } else {
+                    html += `<div style="background:#3d2e1f;border:1px solid #e67e22;padding:12px;margin:6px 0;border-radius:6px;">
+                      <div style="color:#e67e22;font-weight:bold;margin-bottom:6px;">L${l.level} ${escapeHtml(l.level_name)} — ${escapeHtml(l.issue_detail)}</div>`;
+                    if (l.missing_books && l.missing_books.length) {
+                        html += `<div style="font-size:13px;color:#bdc3c7;margin:4px 0;">Missing books: ${l.missing_books.map(b => escapeHtml(b.title)).join(', ')}</div>`;
+                    }
+                    if (l.missing_concepts && l.missing_concepts.length) {
+                        html += `<div style="font-size:13px;color:#bdc3c7;margin:4px 0;">Missing concepts: ${l.missing_concepts.map(c => escapeHtml(c)).join(', ')}</div>`;
+                    }
+                    if (l.needs_summary_fix) {
+                        html += `<div style="font-size:13px;color:#bdc3c7;margin:4px 0;">Summary needs improvement</div>`;
+                    }
+                    html += `<button class="fix-level-btn" data-level="${l.level}" style="margin-top:6px;padding:6px 14px;background:#e67e22;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;">Fix This Level</button></div>`;
+                }
+            });
+            html += `</div>`;
+        }
+
+        // Missing levels to insert
+        if (report.missing_levels_to_insert && report.missing_levels_to_insert.length) {
+            html += `<div style="margin-bottom:12px;"><strong style="color:#e74c3c;">Missing Levels to Add:</strong>`;
+            report.missing_levels_to_insert.forEach(m => {
+                html += `<div style="background:#3d1f1f;padding:10px 12px;margin:4px 0;border-radius:4px;color:#ecf0f1;font-size:13px;">
+                  <strong>${escapeHtml(m.name)}</strong> (after L${m.after_level}) — ${escapeHtml(m.why_needed)}
+                  <button class="insert-level-btn" data-after="${m.after_level}" style="margin-left:10px;padding:4px 10px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;">Insert Level</button>
+                </div>`;
+            });
+            html += `</div>`;
+        }
+
+        // Missing specializations
+        if (report.missing_specializations && report.missing_specializations.length) {
+            html += `<div style="margin-bottom:12px;"><strong style="color:#e67e22;">Missing Specializations:</strong>`;
+            report.missing_specializations.forEach(s => html += `<span style="display:inline-block;background:#2c3e50;padding:4px 10px;margin:3px;border-radius:4px;color:#ecf0f1;font-size:13px;">${escapeHtml(s.name || s)}</span>`);
+            html += `</div>`;
+        }
+
+        if (report.suggestions && report.suggestions.length) {
+            html += `<div style="margin-bottom:12px;"><strong style="color:#f1c40f;">Suggestions:</strong><ul style="color:#ecf0f1;margin:4px 0;">`;
+            report.suggestions.forEach(s => html += `<li style="font-size:13px;">${escapeHtml(s)}</li>`);
+            html += `</ul></div>`;
+        }
+
+        // "Add All Relevant" button
+        if (hasIssues) {
+            html += `<button id="add-all-relevant-btn" style="display:block;width:100%;padding:12px 20px;background:linear-gradient(135deg,#f1c40f,#e67e22);color:#1a1a2e;border:none;border-radius:6px;cursor:pointer;font-size:15px;font-weight:bold;margin-top:10px;">Add All ${totalIssues} Relevant Items</button>`;
+        }
+
+        reportDiv.innerHTML = html;
+
+        let individualFixCount = 0;
+
+        // Wire "Fix This Level" buttons
+        reportDiv.querySelectorAll('.fix-level-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.textContent = 'Fixing...';
+                const ok = await fixLevel(parseInt(btn.getAttribute('data-level')));
+                btn.disabled = false;
+                if (ok) {
+                    btn.textContent = 'Fixed ✓';
+                    btn.style.background = '#27ae60';
+                    individualFixCount++;
+                } else {
+                    btn.textContent = 'Failed — Retry';
+                    btn.style.background = '#c0392b';
+                }
+                ensureRefreshPrompt(reportDiv);
+            });
+        });
+
+        // Wire "Insert Level" buttons
+        reportDiv.querySelectorAll('.insert-level-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                btn.disabled = true;
+                btn.textContent = 'Inserting...';
+                const ok = await insertMissingLevel(parseInt(btn.getAttribute('data-after')));
+                btn.disabled = false;
+                if (ok) {
+                    btn.textContent = 'Inserted ✓';
+                    btn.style.background = '#27ae60';
+                    individualFixCount++;
+                } else {
+                    btn.textContent = 'Failed — Retry';
+                    btn.style.background = '#c0392b';
+                }
+                ensureRefreshPrompt(reportDiv);
+            });
+        });
+
+        function ensureRefreshPrompt(reportDiv) {
+            if (individualFixCount > 0 && !reportDiv.querySelector('#indiv-refresh-btn')) {
+                const promptDiv = document.createElement('div');
+                promptDiv.style.cssText = 'margin-top:10px;padding:10px;background:#2c3e50;border-radius:4px;color:#ecf0f1;font-size:13px;display:flex;align-items:center;justify-content:space-between;';
+                promptDiv.innerHTML = `<span>${individualFixCount} change(s) applied to roadmap data.</span><button id="indiv-refresh-btn" style="padding:6px 14px;background:#f1c40f;color:#1a1a2e;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;">Refresh View</button>`;
+                reportDiv.appendChild(promptDiv);
+                document.getElementById('indiv-refresh-btn').addEventListener('click', () => {
+                    renderRoadmap(fullRoadmapJson, fullRoadmapJson.topic);
+                });
+            } else if (individualFixCount > 0) {
+                const existingSpan = reportDiv.querySelector('#indiv-refresh-btn');
+                if (existingSpan) existingSpan.parentElement.querySelector('span').textContent = `${individualFixCount} change(s) applied to roadmap data.`;
+            }
+        }
+
+        // Wire "Add All Relevant" button
+        const addAllBtn = reportDiv.querySelector('#add-all-relevant-btn');
+        if (addAllBtn) addAllBtn.addEventListener('click', async () => {
+            addAllBtn.disabled = true;
+            addAllBtn.textContent = 'Adding all relevant content...';
+            await addAllRelevant(report);
+            addAllBtn.disabled = false;
+            addAllBtn.style.display = 'none';
+        });
+    }
+
+    // --- Fix a single weak level ---
+    async function fixLevel(levelNum) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return false;
+        const report = window._lastAuditReport;
+        const levelInfo = report.per_level.find(l => l.level === levelNum);
+        if (!levelInfo) return false;
+
+        let fullText = '';
+        try {
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    system: "You fix academic roadmaps. Return ONLY the JSON level object, nothing else.",
+                    messages: [{ role: 'user', content: `The level "${levelInfo.level_name}" (Level ${levelNum}) in the "${fullRoadmapJson.topic}" roadmap is missing content.
+
+CURRENT LEVEL:
+${JSON.stringify(fullRoadmapJson.levels.find(l => l.level === levelNum))}
+
+WHAT TO ADD (merge these into the existing books/concepts — keep existing ones, just add the new ones):
+- Books to add: ${JSON.stringify(levelInfo.missing_books || [])}
+- Concepts to add: ${JSON.stringify(levelInfo.missing_concepts || [])}
+${levelInfo.needs_summary_fix ? '- Rewrite level_summary to better explain what this level achieves and how it builds on previous' : ''}
+
+Return the COMPLETE fixed level as a single JSON object. Keep ALL existing content, just add the missing items. Format:
+{"level":${levelNum},"name":"...","description":"...","duration":"...","level_summary":"...","books":[...all books...],"key_concepts":[...all concepts...],"milestone":"..."}` }],
+                    max_tokens: 4096, stream: true,
+                }),
+            });
+            if (!res.ok) return false;
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) fullText += event.data.delta.text;
+            }
+            const fixedLevel = extractJSON(fullText);
+            const idx = fullRoadmapJson.levels.findIndex(l => l.level === levelNum);
+            if (idx !== -1) {
+                fullRoadmapJson.levels[idx] = fixedLevel;
+                return true;
+            }
+            return false;
+        } catch (e) { console.error('fixLevel failed:', e); return false; }
+    }
+
+    // --- Insert a missing level ---
+    async function insertMissingLevel(afterLevel) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return false;
+        const report = window._lastAuditReport;
+        const missing = (report.missing_levels_to_insert || []).find(m => m.after_level === afterLevel);
+        if (!missing) return false;
+
+        let fullText = '';
+        try {
+            const prevLevel = fullRoadmapJson.levels.find(l => l.level === afterLevel);
+            const nextLevel = fullRoadmapJson.levels.find(l => l.level === afterLevel + 1);
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-6',
+                    system: "You create academic roadmap levels. Return ONLY the JSON level object, nothing else.",
+                    messages: [{ role: 'user', content: `Create a new level for the "${fullRoadmapJson.topic}" roadmap. Insert it BETWEEN "${prevLevel?.name || 'start'}" and "${nextLevel?.name || 'end'}".
+
+Level name: "${missing.name}"
+Why needed: ${missing.why_needed || 'This stage fills a gap in the learning progression'}
+Description: ${missing.description || ''}
+
+Include: 2-3 seminal books (each with title, author, year, why, chapters, google_scholar_query, amazon_query), 8-10 key concepts, a milestone, and level_summary (1-2 paragraphs explaining what this level achieves and how it builds on previous).
+
+Return ONLY valid JSON: {"level":0,"name":"","description":"","duration":"","level_summary":"","books":[...],"key_concepts":[...],"milestone":""}` }],
+                    max_tokens: 4096, stream: true,
+                }),
+            });
+            if (!res.ok) return false;
+            for await (const event of sseParser(res)) {
+                if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) fullText += event.data.delta.text;
+            }
+            const newLevel = extractJSON(fullText);
+            const insertIdx = fullRoadmapJson.levels.findIndex(l => l.level === afterLevel);
+            if (insertIdx !== -1) {
+                fullRoadmapJson.levels.splice(insertIdx + 1, 0, newLevel);
+                fullRoadmapJson.levels.forEach((l, i) => l.level = i + 1);
+                return true;
+            }
+            return false;
+        } catch (e) { console.error('insertMissingLevel failed:', e); return false; }
+    }
+
+    // --- Add all relevant items ---
+    async function addAllRelevant(report) {
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) return;
+
+        const reportDiv = document.getElementById('completeness-report');
+        let results = [];
+
+        // Fix all weak levels
+        const weakLevels = (report.per_level || []).filter(l => l.status !== 'ok');
+        for (const wl of weakLevels) {
+            reportDiv.innerHTML += `<div style="color:#bdc3c7;font-size:13px;margin:4px 0;">Fixing Level ${wl.level}...</div>`;
+            const ok = await fixLevel(wl.level);
+            results.push({type:'fix', level:wl.level, ok});
+            await new Promise(r => setTimeout(r, 300));
+        }
+
+        // Insert missing levels (from highest to lowest, so indices stay stable)
+        const missingLevels = [...(report.missing_levels_to_insert || [])].sort((a, b) => b.after_level - a.after_level);
+        for (const ml of missingLevels) {
+            reportDiv.innerHTML += `<div style="color:#bdc3c7;font-size:13px;margin:4px 0;">Inserting level: ${escapeHtml(ml.name)}...</div>`;
+            const ok = await insertMissingLevel(ml.after_level);
+            results.push({type:'insert', name:ml.name, ok});
+            await new Promise(r => setTimeout(r, 300));
+        }
+
+        // Add missing specializations
+        if (report.missing_specializations && report.missing_specializations.length) {
+            reportDiv.innerHTML += `<div style="color:#bdc3c7;font-size:13px;margin:4px 0;">Adding specializations...</div>`;
+            let fullText = '';
+            try {
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-6',
+                        system: "Generate academic specializations. Return ONLY valid JSON array.",
+                        messages: [{ role: 'user', content: `Generate these missing specializations for "${fullRoadmapJson.topic}" roadmap. Each needs name, description, prerequisite_level. Return JSON array: [{"name":"", "description":"", "prerequisite_level":1}]
+
+Missing: ${JSON.stringify(report.missing_specializations)}` }],
+                        max_tokens: 2048, stream: true,
+                    }),
+                });
+                if (res.ok) {
+                    for await (const event of sseParser(res)) {
+                        if (event.data && event.data.type === 'content_block_delta' && event.data.delta && event.data.delta.text) fullText += event.data.delta.text;
+                    }
+                    const newSpecs = extractJSON(fullText);
+                    if (Array.isArray(newSpecs)) {
+                        if (!fullRoadmapJson.specializations) fullRoadmapJson.specializations = [];
+                        fullRoadmapJson.specializations.push(...newSpecs);
+                        results.push({type:'specs', ok:true});
+                    } else if (newSpecs.specializations) {
+                        if (!fullRoadmapJson.specializations) fullRoadmapJson.specializations = [];
+                        fullRoadmapJson.specializations.push(...newSpecs.specializations);
+                        results.push({type:'specs', ok:true});
+                    }
+                }
+            } catch (e) { console.error('add specializations failed', e); }
+        }
+
+        // Summary
+        const successCount = results.filter(r => r.ok).length;
+        const failCount = results.filter(r => !r.ok).length;
+        reportDiv.innerHTML += `<div style="margin-top:12px;padding:10px;background:#2c3e50;border-radius:4px;color:#ecf0f1;font-size:14px;">
+          <strong>Results:</strong> ${successCount} succeeded${failCount ? ', ' + failCount + ' failed' : ''}.
+          <button id="refresh-view-btn" style="margin-left:12px;padding:8px 16px;background:#f1c40f;color:#1a1a2e;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px;">Refresh Roadmap View</button>
+        </div>`;
+        document.getElementById('refresh-view-btn').addEventListener('click', () => {
+            renderRoadmap(fullRoadmapJson, fullRoadmapJson.topic);
+        });
+    }
+});
+</script>
+</body>
+</html>
